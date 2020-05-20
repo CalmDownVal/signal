@@ -2,7 +2,7 @@
 	"name": "@calmdownval/signal",
 	"description": "A lightweight event dispatcher.",
 	"version": "0.1.0",
-	"license": "MIT",
+	"license": "ISC",
 	"type": "module",
 	"main": "./dist/signal.js",
 	"types": "./dist/signal.d.ts",
