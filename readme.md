@@ -15,21 +15,20 @@ A lightweight event dispatcher.
 
 ## Comparison with EventEmitter
 
-### Pros
-
-- ✅ does not rely on inheritance or mixins
-- ✅ supports async handlers with serial and parallel invocation strategies
-- ✅ provides concise and readable interface
-- ✅ can be passed to standard event emitters
-- ✅ does not rely on string event names, which are much harder to use with
-  autocompletion and type-checking and therefore a frequent source of silly bugs
-  caused by typos
-- ✅ tiny, without any dependencies
-
 ### Cons
 
 - ❌ is non-standard and will involve some learning curve and getting used to
 - ❌ does not support event bubbling
+
+### Pros
+
+- ✅ supports async handlers with serial and parallel invocation strategies
+- ✅ does not rely on class inheritance or mixins
+- ✅ tiny, without any dependencies
+- ✅ smoothly integrates with standard event emitters
+- ✅ does not rely on string event names, which are much harder to use with
+  autocompletion or type-checking and present a frequent source of silly bugs
+  due to typos
 
 ## Usage Guide
 
@@ -56,17 +55,20 @@ Internally this function only checks the async option and delegates execution
 to either `Signal.createSync` or `Signal.createAsync`.
 
 ```ts
-// both will execute their handlers synchronously
-const syncSignal1 = Signal.create();
-const syncSignal2 = Signal.createSync();
+// will invoke handlers synchronously in series
+const syncSignal1 = Signal.createSync();
+const syncSignal2 = Signal.create();
 
-// both will execute their handlers asynchronously, in series, one at a time
-const asyncSignal1 = Signal.create({ async: true });
-const asyncSignal2 = Signal.createAsync();
+// will invoke handlers asynchronously, in series, one at a time
+const asyncSignal1 = Signal.createAsync();
+const asyncSignal2 = Signal.create({ async: true });
 
-// both will execute their handlers asynchronously, all at once, in parallel
-const asyncSignal3 = Signal.create({ async: true, parallel: true });
-const asyncSignal4 = Signal.createAsync({ parallel: true });
+// will invoke handlers asynchronously, all at once, in parallel
+const asyncSignal3 = Signal.createAsync({ parallel: true });
+const asyncSignal4 = Signal.create({
+  async: true,
+  parallel: true
+});
 ```
 
 ### Adding Handlers
@@ -78,15 +80,14 @@ signal instance, the second is the handler to add.
 Signal.on(mySignal, () => console.log('foo'));
 ```
 
-Such handlers will be invoked every time the signal is triggered. You can also
-specify the `once` option to only have a handler run once and then automatically
-remove itself from the handler list.
+Handlers will be invoked every time the signal is triggered. You can also set
+the `once` flag to only invoke a handler once and then to automatically remove
+it from the handler list.
 
 ```ts
-// trigger once by passing the options object
 Signal.on(mySignal, myHandler, { once: true });
 
-// trigger once or by using the util function
+// shorter version using the .once util
 Signal.once(mySignal, myHandler);
 ```
 
@@ -106,12 +107,12 @@ test(); // will print 'bar' twice
 ### Removing Handlers
 
 To remove a handler (regardless of the once option), use the `Signal.off`
-function. It will search for the first occurrence of the callback and remove it
-from the list if found. The function will return a boolean indicating whether
-the handler was found and removed or not.
+function. It will search for the first occurrence of the handler and remove it
+from the list. The function will return a boolean indicating whether the handler
+was found and removed or not.
 
 If the same handler was added multiple times (by calling .on repeatedly), to
-remove it you must call .off the same amount of times.
+fully remove it you must call .off the same amount of times.
 
 ```ts
 // will remove the first found occurrence of myHandler
@@ -123,9 +124,10 @@ Signal.off(s1);
 
 ### Triggering a Signal
 
-Each signal instance is actually a function and thus can be called directly. You
-can pass any amount of arguments to a signal, they will be forwarded to each
-handler. No data is returned by this function call (void).
+Each signal instance is actually a function. Triggering it is as simple as
+adding a pair of brackets! You can pass any amount of arguments to a signal,
+they will be forwarded to each handler. No data is returned by this function
+call (void).
 
 ```ts
 mySignal('arg1', 123, /* ... */);
@@ -148,11 +150,11 @@ catch (error) {
 
 Asynchronous signal interface is almost identical to their synchronous
 counterpart. The key difference is that an async signal will check the return
-type of every handler and properly await any promises returned.
+type of every handler and properly await all promises.
 
-Sync signals will also work with async handlers but *will ignore* the return
-type of the handlers. This may be desirable in some cases, but keep in mind that
-*any potential promise rejections will not be handled!*
+Sync signals too accept async handlers but *will ignore* the return type of the
+handlers. This may be desirable in some cases, but keep in mind that *any
+potential promise rejections will not be handled!*
 
 The execution strategy of async handlers is configurable via the `parallel`
 option (see [Creating a Signal](#creating-a-signal)).
@@ -183,21 +185,19 @@ await mySignal();
 
 When enabled, the signal will invoke all handlers simultaneously and resolve
 once *all* have resolved. If one or more handlers reject the wrapping promise
-returned by the signal will also immediately. This is similar to the behavior of
-`Promise.all`.
+returned by the signal will immediately reject as well. This is similar to the
+behavior of `Promise.all`
 
-This strategy can often provide significant speedups as many async actions can
-run simultaneously.
-
-It is not suitable for situations when logic of one handler may affect the
-outcome of others as it may introduce race conditions which generally result in
+This strategy can often provide significant speedups due to better resource
+efficiency, but is not suitable for situations when logic of one handler may
+affect the outcome of others. Race conditions may be introduced and result in
 very nasty, hard to track bugs.
 
 One more caveat of this strategy is that if a handler rejects, other handlers
 still continue their execution and there is no longer any way to await or cancel
-them. Moreover if additional rejections occur, they will not propagate upwards
-either (the wrapping promise is already rejected) and will stay hidden from any
-error handling efforts you might have set up.
+them. Moreover if additional rejections occur, they will not propagate (the
+wrapping promise is already rejected) and will stay hidden from any error
+handling mechanics.
 
 ```ts
 const mySignal = Signal.createAsync({ parallel: true });
