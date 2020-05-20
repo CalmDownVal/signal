@@ -1,0 +1,31 @@
+{
+	"name": "@calmdownval/signal",
+	"description": "A lightweight event dispatcher.",
+	"version": "0.1.0",
+	"license": "MIT",
+	"type": "module",
+	"main": "dist/signal.js",
+	"types": "dist/signal.d.ts",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/CalmDownVal/signal.git"
+	},
+	"keywords": [
+		"signal",
+		"event",
+		"async",
+		"dispatcher"
+	],
+	"scripts": {
+		"build": "tsc",
+		"build:clean": "rm -rf dist/* && tsc"
+	},
+	"devDependencies": {
+		"@typescript-eslint/eslint-plugin": "2.34.0",
+		"@typescript-eslint/parser": "2.34.0",
+		"eslint": "7.x.x",
+		"eslint-import-resolver-typescript": "2.x.x",
+		"eslint-plugin-import": "2.x.x",
+		"typescript": "3.9.x"
+	}
+}

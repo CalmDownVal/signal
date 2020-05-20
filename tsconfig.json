@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+		"baseUrl": "./src",
+		"charset": "utf8",
+		"declaration": true,
+		"forceConsistentCasingInFileNames": true,
+		"isolatedModules": true,
+		"lib": [
+			"dom",
+			"esnext"
+		],
+		"module": "esnext",
+		"moduleResolution": "node",
+		"newLine": "lf",
+		"outDir": "./dist",
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "esnext"
+	},
+	"include": [
+		"./src/**/*"
+	]
+}
