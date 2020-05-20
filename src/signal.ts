@@ -1,11 +1,11 @@
-type Wrap<T> = T extends unknown[] ? T : [ T ];
+type Wrap<T> = T extends void ? [] : T extends unknown[] ? T : [ T ];
 
-export interface Handler<TArgs> {
-	(...args: Wrap<TArgs>): Promise<void> | void;
+export interface Handler<TArgs = void> {
+	(...args: Wrap<TArgs>): Promise<unknown> | void;
 	inner?: Handler<TArgs>;
 }
 
-export interface SyncSignal<TArgs> {
+export interface SyncSignal<TArgs = void> {
 	(...args: Wrap<TArgs>): void;
 	readonly list: Handler<TArgs>[];
 	readonly lock: () => void;
@@ -15,7 +15,7 @@ export interface SyncSignalOptions {
 	async?: false;
 }
 
-export function createSync<TArgs>(): SyncSignal<TArgs> {
+export function createSync<TArgs = void>(): SyncSignal<TArgs> {
 	let isUsingList = false;
 	const signal = function () {
 		isUsingList = true;
@@ -43,14 +43,14 @@ export function createSync<TArgs>(): SyncSignal<TArgs> {
 }
 
 
-export interface AsyncSignal<TArgs> {
+export interface AsyncSignal<TArgs = void> {
 	(...args: Wrap<TArgs>): Promise<void>;
 	readonly list: Handler<TArgs>[];
 	readonly lock: () => void;
 }
 
 export interface AsyncSignalOptions {
-	async: true;
+	async?: true;
 	parallel?: boolean;
 }
 
@@ -91,7 +91,9 @@ function serial(handlers: Handler<any>[], args: any[]) {
 
 			const result = handlers[index++].apply(null, args);
 			if (isPromise(result)) {
-				result.then(next, reject);
+				result.then(next, () => {
+					reject(69);
+				});
 			}
 			else {
 				next();
@@ -102,15 +104,14 @@ function serial(handlers: Handler<any>[], args: any[]) {
 	});
 }
 
-export function createAsync<TArgs>(options: AsyncSignalOptions): AsyncSignal<TArgs> {
+export function createAsync<TArgs = void>(options?: AsyncSignalOptions): AsyncSignal<TArgs> {
 	let isUsingList = false;
+	const strategy = options && options.parallel ? parallel : serial;
 	const signal = function () {
 		isUsingList = true;
-		const result = (options.parallel ? parallel : serial)(signal.list, arguments as never);
-		result.finally(() => {
+		return strategy(signal.list, arguments as never).finally(() => {
 			isUsingList = false;
 		});
-		return result;
 	};
 
 	signal.list = [] as Handler<TArgs>[];
@@ -125,14 +126,14 @@ export function createAsync<TArgs>(options: AsyncSignalOptions): AsyncSignal<TAr
 }
 
 
-export type Signal<TArgs> =
+export type Signal<TArgs = void> =
 	SyncSignal<TArgs> | AsyncSignal<TArgs>;
 
 export type SignalOptions =
 	SyncSignalOptions | AsyncSignalOptions;
 
-export function create<TArgs>(options?: SyncSignalOptions): SyncSignal<TArgs>;
-export function create<TArgs>(options?: AsyncSignalOptions): AsyncSignal<TArgs>;
+export function create<TArgs = void>(options?: SyncSignalOptions): SyncSignal<TArgs>;
+export function create<TArgs = void>(options?: AsyncSignalOptions): AsyncSignal<TArgs>;
 export function create(options: SignalOptions = {}) {
 	return options.async
 		? createAsync(options)
@@ -144,6 +145,7 @@ export function off<TArgs>(signal: Signal<TArgs>, handler?: Handler<TArgs>) {
 	if (handler === undefined) {
 		signal.lock();
 		list.splice(0, list.length);
+		return true;
 	}
 
 	let index = list.length - 1;
@@ -157,8 +159,11 @@ export function off<TArgs>(signal: Signal<TArgs>, handler?: Handler<TArgs>) {
 
 	if (index !== -1) {
 		signal.lock();
-		list.splice(index, 1);
+		signal.list.splice(index, 1);
+		return true;
 	}
+
+	return false;
 }
 
 export function on<TArgs>(signal: Signal<TArgs>, handler: Handler<TArgs>, options: { once?: boolean } = {}) {

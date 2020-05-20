@@ -89,8 +89,7 @@
 			"warn",
 			{
 				"groups": [
-					"builtin",
-					[ "external", "internal" ],
+					[ "builtin", "external", "internal" ],
 					[ "sibling", "parent", "index" ]
 				],
 				"pathGroups": [
