@@ -2,8 +2,9 @@
 
 A lightweight event dispatcher.
 
+- [Installation](#installation)
 - [Comparison with EventEmitter](#comparison-with-eventemitter)
-- [Usage Guide](#usage-guide)
+- [User Guide](#user-guide)
   - [Creating a Signal](#creating-a-signal)
   - [Adding Handlers](#adding-handlers)
   - [Removing Handlers](#removing-handlers)
@@ -13,24 +14,38 @@ A lightweight event dispatcher.
     - [Parallel Execution](#parallel-execution)
   - [Wrapping an EventEmitter](#wrapping-an-eventemitter)
 
+## Installation
+
+You can install this package using NPM or Yarn. It already contains its own
+typings and needs no additional dependencies to use with TypeScript.
+
+```sh
+# using NPM
+npm install @calmdownval/signal
+
+# using Yarn
+yarn add @calmdownval/signal
+```
+
 ## Comparison with EventEmitter
-
-### Cons
-
-- ❌ is non-standard and will involve some learning curve and getting used to
-- ❌ does not support event bubbling
 
 ### Pros
 
 - ✅ supports async handlers with serial and parallel invocation strategies
 - ✅ does not rely on class inheritance or mixins
+- ✅ written with TypeScript in mind
 - ✅ tiny, without any dependencies
 - ✅ smoothly integrates with standard event emitters
 - ✅ does not rely on string event names, which are much harder to use with
   autocompletion or type-checking and present a frequent source of silly bugs
   due to typos
 
-## Usage Guide
+### Cons
+
+- ❌ is non-standard and will involve some learning curve and getting used to
+- ❌ does not support event bubbling
+
+## User Guide
 
 The library provides everything as named exports. The best approach to preserve
 good code readability is to import the entire namespace as `Signal`.
@@ -134,8 +149,8 @@ mySignal('arg1', 123, /* ... */);
 ```
 
 Synchronous signals will invoke handlers in series. If any one of them throws
-the execution immediately stops. It is the caller's responsibility to handle any
-such states:
+the execution immediately stops. It is the caller's responsibility to handle
+thrown exceptions:
 
 ```ts
 try {
@@ -215,10 +230,11 @@ If you have an EventEmitter that you wish to 'signalify' you can do so by simply
 passing the signal itself to the `addEventListener` function:
 
 ```ts
-const confirmed = Signal.create();
+const confirmed = Signal.create<MouseEvent>();
 const button = document.getElementById('ok-button');
 
 button.addEventListener('click', confirmed);
 ```
 
-Now every time the button is clicked the `confirmed` signal will trigger.
+Now every time the button is clicked the `confirmed` signal will trigger passing
+the MouseEvent object to all its handlers.
