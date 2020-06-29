@@ -36,7 +36,7 @@ describe('async serial strategy', () => {
 		assert(b.calledOnce);
 
 		await clock.tickAsync(100);
-		return pending;
+		await pending;
 	});
 
 	it('should propagate errors', async () => {
@@ -51,7 +51,7 @@ describe('async serial strategy', () => {
 
 		const pending = assert.rejects(test);
 		await clock.tickAsync(200);
-		return pending;
+		await pending;
 	});
 });
 
@@ -69,7 +69,7 @@ describe('async parallel strategy', () => {
 		assert(b.calledOnce);
 
 		await clock.tickAsync(100);
-		return pending;
+		await pending;
 	});
 
 	it('should propagate errors', async () => {
@@ -84,6 +84,6 @@ describe('async parallel strategy', () => {
 
 		const pending = assert.rejects(test);
 		await clock.tickAsync(100);
-		return pending;
+		await pending;
 	});
 });
