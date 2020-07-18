@@ -1,7 +1,7 @@
 {
 	"name": "@calmdownval/signal",
 	"description": "A lightweight event dispatcher.",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"license": "ISC",
 	"type": "commonjs",
 	"main": "./dist/signal.js",
@@ -22,7 +22,7 @@
 		"test": "ts-mocha -p ./tests/tsconfig.json ./tests/**/*.ts"
 	},
 	"devDependencies": {
-		"@types/mocha": "7.x.x",
+		"@types/mocha": "8.x.x",
 		"@types/node": "14.x.x",
 		"@types/sinon": "9.x.x",
 		"@typescript-eslint/eslint-plugin": "3.x.x",

@@ -132,13 +132,13 @@ export type SignalOptions =
 
 export function create<TArgs = void>(options?: SyncSignalOptions): SyncSignal<TArgs>;
 export function create<TArgs = void>(options?: AsyncSignalOptions): AsyncSignal<TArgs>;
-export function create(options: SignalOptions = {}) {
+export function create<TArgs = void>(options: SignalOptions = {}): Signal<TArgs> {
 	return options.async
 		? createAsync(options)
 		: createSync();
 }
 
-export function off<TArgs>(signal: Signal<TArgs>, handler?: Handler<TArgs>) {
+export function off<TArgs>(signal: Signal<TArgs>, handler?: Handler<TArgs>): boolean {
 	const { list } = signal;
 	if (handler === undefined) {
 		signal.lock();
@@ -164,7 +164,11 @@ export function off<TArgs>(signal: Signal<TArgs>, handler?: Handler<TArgs>) {
 	return false;
 }
 
-export function on<TArgs>(signal: Signal<TArgs>, handler: Handler<TArgs>, options: { once?: boolean } = {}) {
+export interface HandlerOptions {
+	once?: boolean;
+}
+
+export function on<TArgs>(signal: Signal<TArgs>, handler: Handler<TArgs>, options: HandlerOptions = {}): void {
 	let wrapped = handler;
 	if (options && options.once) {
 		wrapped = function () {
@@ -178,6 +182,6 @@ export function on<TArgs>(signal: Signal<TArgs>, handler: Handler<TArgs>, option
 	signal.list.push(wrapped);
 }
 
-export function once<TArgs>(signal: Signal<TArgs>, handler: Handler<TArgs>) {
+export function once<TArgs>(signal: Signal<TArgs>, handler: Handler<TArgs>): void {
 	on(signal, handler, { once: true });
 }

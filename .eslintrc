@@ -21,6 +21,7 @@
 		"no-alert": "warn",
 		"no-shadow": "error",
 		"eqeqeq": "error",
+		"camelcase": "warn",
 		"curly": "warn",
 		"eol-last": "warn",
 		"no-empty": "warn",
@@ -81,8 +82,6 @@
 			"warn",
 			"stroustrup"
 		],
-		"camelcase": "off",
-		"@typescript-eslint/camelcase": "warn",
 
 		// imports
 		"import/order": [
