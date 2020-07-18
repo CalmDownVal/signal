@@ -43,7 +43,7 @@ yarn add @calmdownval/signal
 ### Cons
 
 - ❌ is non-standard and will involve some learning curve and getting used to
-- ❌ does not support event bubbling
+- ❌ not suitable for event bubbling
 
 ## User Guide
 
@@ -137,6 +137,9 @@ Signal.off(s1, myHandler);
 Signal.off(s1);
 ```
 
+The .off method will return a boolean indicating whether the operation removed
+any handlers.
+
 ### Triggering a Signal
 
 Each signal instance is actually a function. Triggering it is as simple as
@@ -161,15 +164,18 @@ catch (error) {
 }
 ```
 
+You can add async handlers to synchronous signals, but they will be executed in
+a fire-and-forget fashion. This may be desirable in some cases, but keep in mind
+that *any potential promise rejections will not be handled!*
+
 ### Async Signals
 
 Asynchronous signal interface is almost identical to their synchronous
 counterpart. The key difference is that an async signal will check the return
-type of every handler and properly await all promises.
+type of every handler and handle all promises it receives.
 
-Sync signals too accept async handlers but *will ignore* the return type of the
-handlers. This may be desirable in some cases, but keep in mind that *any
-potential promise rejections will not be handled!*
+When using async signals all promise rejections are guaranteed to be handled
+regardless of execution strategy used.
 
 The execution strategy of async handlers is configurable via the `parallel`
 option (see [Creating a Signal](#creating-a-signal)).
@@ -177,14 +183,14 @@ option (see [Creating a Signal](#creating-a-signal)).
 #### Serial Execution
 
 The default strategy is serial execution. Execution will await the first handler
-before moving on to the next one.
+before moving onto the next one.
 
-This strategy was chosen as default because it best resembles the synchronous
-signal execution. Any promise rejections will immediately propagate upwards and
-terminate the execution.
+This is the default strategy as it resembles the synchronous signal execution.
+A promise rejection will immediately propagate upwards and terminate the
+execution. Handlers further down in the list will not execute in such case.
 
-The obvious disadvantage is that this strategy may sometimes take a very long
-time to finish.
+The disadvantage is that this strategy may sometimes take very long time to
+finish.
 
 ```ts
 const mySignal = Signal.createAsync();
@@ -199,20 +205,19 @@ await mySignal();
 #### Parallel Execution
 
 When enabled, the signal will invoke all handlers simultaneously and resolve
-once *all* have resolved. If one or more handlers reject the wrapping promise
-returned by the signal will immediately reject as well. This is similar to the
-behavior of `Promise.all`
+once *all* have resolved. If a handler rejects the wrapping promise returned by
+the signal will immediately reject as well. This is similar to the behavior of
+`Promise.all`.
 
-This strategy can often provide significant speedups due to better resource
+This strategy can often provide significant speedups due to its better resource
 efficiency, but is not suitable for situations when logic of one handler may
-affect the outcome of others. Race conditions may be introduced and result in
-very nasty, hard to track bugs.
+affect the outcome of another. Race conditions may be introduced and result in
+nasty, hard to track bugs.
 
 One more caveat of this strategy is that if a handler rejects, other handlers
-still continue their execution and there is no longer any way to await or cancel
-them. Moreover if additional rejections occur, they will not propagate (the
-wrapping promise is already rejected) and will stay hidden from any error
-handling mechanics.
+continue their execution and there is no way to await them anymore. Moreover if
+additional rejections occur, they will not propagate (the wrapping promise is
+already rejected) and will stay hidden from any error handling mechanics.
 
 ```ts
 const mySignal = Signal.createAsync({ parallel: true });
