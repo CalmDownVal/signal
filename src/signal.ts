@@ -91,9 +91,7 @@ function serial(handlers: Handler<any>[], args: any[]) {
 
 			const result = handlers[index++].apply(null, args);
 			if (isPromise(result)) {
-				result.then(next, () => {
-					reject(69);
-				});
+				result.then(next, reject);
 			}
 			else {
 				next();

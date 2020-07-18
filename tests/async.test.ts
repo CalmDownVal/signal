@@ -39,19 +39,26 @@ describe('async serial strategy', () => {
 		await pending;
 	});
 
-	it('should propagate errors', async () => {
+	it('should immediately propagate a rejection', async () => {
+		const error = new Error();
+
 		const a = delay(() => 1, 100);
 		const b = delay(() => {
-			throw new Error();
+			throw error;
 		}, 100);
+		const c = delay(() => 3, 100);
 
 		const test = Signal.createAsync();
 		Signal.on(test, a);
 		Signal.on(test, b);
+		Signal.on(test, c);
 
-		const pending = assert.rejects(test);
+		const pending = assert.rejects(test, e => e === error);
 		await clock.tickAsync(200);
 		await pending;
+
+		// since b rejects, c should not get called
+		assert(c.notCalled);
 	});
 });
 
@@ -72,18 +79,31 @@ describe('async parallel strategy', () => {
 		await pending;
 	});
 
-	it('should propagate errors', async () => {
+	it('should propagate the first rejection and suppress any others', async () => {
+		const error = new Error();
+
 		const a = delay(() => 1, 100);
 		const b = delay(() => {
-			throw new Error();
+			throw error;
 		}, 100);
+
+		// fake a promise
+		const cThen = sinon.fake();
+		const c = () => ({ then: cThen } as never);
 
 		const test = Signal.createAsync({ parallel: true });
 		Signal.on(test, a);
 		Signal.on(test, b);
+		Signal.on(test, c);
 
-		const pending = assert.rejects(test);
+		const pending = assert.rejects(test, e => e === error);
 		await clock.tickAsync(100);
 		await pending;
+
+		// handlers must always receive a reject handler
+		assert(cThen.calledOnceWith(
+			sinon.match.func,
+			sinon.match.func
+		));
 	});
 });
