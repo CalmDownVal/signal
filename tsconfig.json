@@ -1,21 +1,17 @@
 {
 	"compilerOptions": {
-		"baseUrl": "./src",
 		"charset": "utf8",
-		"declaration": true,
 		"lib": [
 			"esnext"
 		],
-		"module": "commonjs",
-		"moduleResolution": "node",
 		"newLine": "lf",
-		"outDir": "./dist",
+		"removeComments": true,
 		"skipLibCheck": true,
 		"strict": true,
 		"target": "esnext",
 		"types": []
 	},
-	"include": [
-		"./src/**/*"
+	"files": [
+		"./src/signal.ts"
 	]
 }

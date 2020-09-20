@@ -1,15 +1,16 @@
 {
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
-		"baseUrl": "./",
 		"esModuleInterop": true,
+		"module": "commonjs",
 		"noEmit": true,
 		"types": [
 			"mocha",
 			"node"
 		]
 	},
+	"files": [],
 	"include": [
-		"./**/*"
+		"../src/tests/**/*.ts"
 	]
 }

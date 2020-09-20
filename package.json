@@ -1,11 +1,18 @@
 {
 	"name": "@calmdownval/signal",
 	"description": "A lightweight event dispatcher.",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"license": "ISC",
 	"type": "commonjs",
-	"main": "./dist/signal.js",
+	"main": "./dist/cjs/signal.js",
+	"module": "./dist/mjs/signal.mjs",
 	"types": "./dist/signal.d.ts",
+	"exports": {
+		".": {
+			"require": "./dist/cjs/signal.js",
+			"default": "./dist/mjs/signal.mjs"
+		}
+	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/CalmDownVal/signal.git"
@@ -17,9 +24,8 @@
 		"dispatcher"
 	],
 	"scripts": {
-		"build": "tsc",
-		"build:clean": "rm -rf ./dist/* && tsc",
-		"test": "ts-mocha -p ./tests/tsconfig.json ./tests/**/*.ts"
+		"build": "./script/build.sh",
+		"test": "ts-mocha -p ./config/tsconfig.mocha.json ./src/tests/**/*.ts"
 	},
 	"devDependencies": {
 		"@types/mocha": "8.x.x",

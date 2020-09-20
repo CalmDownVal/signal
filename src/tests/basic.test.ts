@@ -1,7 +1,7 @@
 import assert from 'assert';
 import * as sinon from 'sinon';
 
-import * as Signal from '../src/signal';
+import * as Signal from '../signal';
 
 describe('Signal.on(), Signal.once() and triggering', () => {
 	it('should register and correctly execute a basic handler', () => {

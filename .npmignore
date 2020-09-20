@@ -1,6 +1,7 @@
 .vscode/
+config/
+script/
 src/
-tests/
 .editorconfig
 .eslintrc
 tsconfig.json

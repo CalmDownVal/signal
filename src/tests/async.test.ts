@@ -1,7 +1,7 @@
 import assert from 'assert';
 import * as sinon from 'sinon';
 
-import * as Signal from '../src/signal';
+import * as Signal from '../signal';
 
 let clock: sinon.SinonFakeTimers;
 before(() => {
