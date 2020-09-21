@@ -4,13 +4,13 @@
 	"version": "1.0.2",
 	"license": "ISC",
 	"type": "commonjs",
-	"main": "./dist/cjs/signal.js",
-	"module": "./dist/mjs/signal.mjs",
-	"types": "./dist/signal.d.ts",
+	"main": "./dist/cjs/index.js",
+	"module": "./dist/mjs/index.mjs",
+	"types": "./dist/cjs/index.d.ts",
 	"exports": {
 		".": {
-			"require": "./dist/cjs/signal.js",
-			"default": "./dist/mjs/signal.mjs"
+			"require": "./dist/cjs/index.js",
+			"default": "./dist/mjs/index.mjs"
 		}
 	},
 	"repository": {

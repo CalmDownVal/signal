@@ -8,10 +8,9 @@
 		"removeComments": true,
 		"skipLibCheck": true,
 		"strict": true,
-		"target": "esnext",
 		"types": []
 	},
 	"files": [
-		"./src/signal.ts"
+		"./src/index.ts"
 	]
 }
