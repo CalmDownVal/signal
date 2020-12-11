@@ -4,13 +4,13 @@
 	"version": "1.0.2",
 	"license": "ISC",
 	"type": "commonjs",
-	"main": "./dist/cjs/index.js",
-	"module": "./dist/mjs/index.mjs",
-	"types": "./dist/cjs/index.d.ts",
+	"main": "./build/cjs/index.js",
+	"module": "./build/mjs/index.mjs",
+	"types": "./build/cjs/index.d.ts",
 	"exports": {
 		".": {
-			"require": "./dist/cjs/index.js",
-			"default": "./dist/mjs/index.mjs"
+			"require": "./build/cjs/index.js",
+			"default": "./build/mjs/index.mjs"
 		}
 	},
 	"repository": {
