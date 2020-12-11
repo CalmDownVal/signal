@@ -17,13 +17,13 @@ export interface SyncSignalOptions {
 
 export function createSync<TArgs = void>(): SyncSignal<TArgs> {
 	let isUsingList = false;
-	const signal = function () {
+	const signal = function (this: any) {
 		isUsingList = true;
 		try {
 			const snapshot = signal.list;
 			const length = snapshot.length;
 			for (let i = 0; i < length; ++i) {
-				snapshot[i].apply(null, arguments as never);
+				snapshot[i].apply(this, arguments as never);
 			}
 		}
 		finally {
@@ -58,7 +58,7 @@ function isPromise(obj: any): obj is Promise<any> {
 	return obj && typeof obj.then === 'function';
 }
 
-function parallel(handlers: Handler<any>[], args: any[]) {
+function parallel(thisArg: any, handlers: Handler<any>[], args: any[]) {
 	return new Promise<void>((resolve, reject) => {
 		let pending = 0;
 		const fulfill = () => {
@@ -69,7 +69,7 @@ function parallel(handlers: Handler<any>[], args: any[]) {
 
 		const length = handlers.length;
 		for (let index = 0; index < length; ++index) {
-			const result = handlers[index].apply(null, args);
+			const result = handlers[index].apply(thisArg, args);
 			if (isPromise(result)) {
 				++pending;
 				result.then(fulfill, reject);
@@ -78,7 +78,7 @@ function parallel(handlers: Handler<any>[], args: any[]) {
 	});
 }
 
-function serial(handlers: Handler<any>[], args: any[]) {
+function serial(thisArg: any, handlers: Handler<any>[], args: any[]) {
 	return new Promise<void>((resolve, reject) => {
 		const length = handlers.length;
 		let index = 0;
@@ -89,7 +89,7 @@ function serial(handlers: Handler<any>[], args: any[]) {
 				return;
 			}
 
-			const result = handlers[index++].apply(null, args);
+			const result = handlers[index++].apply(thisArg, args);
 			if (isPromise(result)) {
 				result.then(next, reject);
 			}
@@ -105,9 +105,9 @@ function serial(handlers: Handler<any>[], args: any[]) {
 export function createAsync<TArgs = void>(options?: AsyncSignalOptions): AsyncSignal<TArgs> {
 	let isUsingList = false;
 	const strategy = options && options.parallel ? parallel : serial;
-	const signal = function () {
+	const signal = function (this: any) {
 		isUsingList = true;
-		return strategy(signal.list, arguments as never).finally(() => {
+		return strategy(this, signal.list, arguments as any).finally(() => {
 			isUsingList = false;
 		});
 	};

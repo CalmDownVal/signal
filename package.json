@@ -1,7 +1,7 @@
 {
 	"name": "@calmdownval/signal",
 	"description": "A lightweight event dispatcher.",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"license": "ISC",
 	"type": "commonjs",
 	"main": "./build/cjs/index.js",
