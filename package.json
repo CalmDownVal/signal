@@ -29,17 +29,21 @@
 		"test": "ts-mocha -p ./config/tsconfig.mocha.json ./src/tests/**/*.ts"
 	},
 	"devDependencies": {
-		"@types/mocha": "8.x.x",
-		"@types/node": "14.x.x",
-		"@types/sinon": "9.x.x",
-		"@typescript-eslint/eslint-plugin": "3.x.x",
-		"@typescript-eslint/parser": "3.x.x",
-		"eslint": "7.x.x",
-		"eslint-import-resolver-typescript": "2.x.x",
-		"eslint-plugin-import": "2.x.x",
-		"mocha": "8.x.x",
-		"sinon": "9.x.x",
-		"ts-mocha": "7.x.x",
-		"typescript": "3.9.x"
+		"@types/mocha": "8.2.x",
+		"@types/node": "14.14.x",
+		"@types/sinon": "9.0.x",
+		"@typescript-eslint/eslint-plugin": "4.9.x",
+		"@typescript-eslint/parser": "4.9.x",
+		"eslint": "7.15.x",
+		"eslint-import-resolver-typescript": "2.3.x",
+		"eslint-plugin-import": "2.22.x",
+		"mocha": "8.2.x",
+		"sinon": "9.2.x",
+		"ts-mocha": "8.0.x",
+		"typescript": "4.1.x"
+	},
+	"resolutions": {
+		"mocha/debug": ">=4.3.1",
+		"*/lodash": ">=4.17.19"
 	}
 }
