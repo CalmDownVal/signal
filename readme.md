@@ -4,7 +4,7 @@ A lightweight event dispatcher.
 
 - [Installation](#installation)
 - [Comparison with EventEmitter](#comparison-with-eventemitter)
-- [User Guide](#user-guide)
+- [Usage Guide](#usage-guide)
   - [Creating a Signal](#creating-a-signal)
   - [Adding Handlers](#adding-handlers)
   - [Removing Handlers](#removing-handlers)
@@ -45,7 +45,7 @@ yarn add @calmdownval/signal
 - ❌ is non-standard and will involve some learning curve and getting used to
 - ❌ not suitable for event bubbling
 
-## User Guide
+## Usage Guide
 
 The library provides everything as named exports. The best approach to preserve
 good code readability is to import the entire namespace as `Signal`.
@@ -123,11 +123,13 @@ test(); // will print 'bar' twice
 
 To remove a handler (regardless of the once option), use the `Signal.off`
 function. It will search for the first occurrence of the handler and remove it
-from the list. The function will return a boolean indicating whether the handler
-was found and removed or not.
+from the list.
 
-If the same handler was added multiple times (by calling .on repeatedly), to
-fully remove it you must call .off the same amount of times.
+If the same handler was added multiple times (by calling `.on` repeatedly), to
+fully remove it you must call `.off` the same amount of times.
+
+If no specific handler is provided via the second argument the `.off` function
+will remove all handlers registered for the given signal.
 
 ```ts
 // will remove the first found occurrence of myHandler
@@ -137,23 +139,23 @@ Signal.off(s1, myHandler);
 Signal.off(s1);
 ```
 
-The .off method will return a boolean indicating whether the operation removed
-any handlers.
+The `.off` function will return a boolean indicating whether the operation
+removed any handlers.
 
 ### Triggering a Signal
 
 Each signal instance is actually a function. Triggering it is as simple as
 adding a pair of brackets! You can pass any amount of arguments to a signal,
-they will be forwarded to each handler. No data is returned by this function
-call (void).
+they will be forwarded to each handler. Synchronous signals do not return any
+value (void), asynchronous return a `Promise<void>`.
 
 ```ts
 mySignal('arg1', 123, /* ... */);
 ```
 
-Synchronous signals will invoke handlers in series. If any one of them throws
-the execution immediately stops. It is the caller's responsibility to handle
-thrown exceptions:
+Synchronous signals will always invoke handlers in series. If any one of them
+throws the execution immediately stops. It is the caller's responsibility to
+handle thrown exceptions:
 
 ```ts
 try {
@@ -175,22 +177,20 @@ counterpart. The key difference is that an async signal will check the return
 type of every handler and handle all promises it receives.
 
 When using async signals all promise rejections are guaranteed to be handled
-regardless of execution strategy used.
+regardless of execution strategy used, errors may however get suppressed. See
+below for details.
 
 The execution strategy of async handlers is configurable via the `parallel`
 option (see [Creating a Signal](#creating-a-signal)).
 
 #### Serial Execution
 
-The default strategy is serial execution. Execution will await the first handler
+The default strategy is serial execution. Execution will await each handler
 before moving onto the next one.
 
-This is the default strategy as it resembles the synchronous signal execution.
+This is the default strategy as it mimics the synchronous signal execution.
 A promise rejection will immediately propagate upwards and terminate the
-execution. Handlers further down in the list will not execute in such case.
-
-The disadvantage is that this strategy may sometimes take very long time to
-finish.
+execution. Handlers further down the list will not execute in such case.
 
 ```ts
 const mySignal = Signal.createAsync();
@@ -209,15 +209,12 @@ once *all* have resolved. If a handler rejects the wrapping promise returned by
 the signal will immediately reject as well. This is similar to the behavior of
 `Promise.all`.
 
-This strategy can often provide significant speedups due to its better resource
-efficiency, but is not suitable for situations when logic of one handler may
-affect the outcome of another. Race conditions may be introduced and result in
-nasty, hard to track bugs.
+Note that if a handler rejects other handlers continue their execution and there
+is no way to await them. If additional rejections occur, they will be
+suppressed as the wrapping promise was already rejected with the first error.
 
-One more caveat of this strategy is that if a handler rejects, other handlers
-continue their execution and there is no way to await them anymore. Moreover if
-additional rejections occur, they will not propagate (the wrapping promise is
-already rejected) and will stay hidden from any error handling mechanics.
+The parallel execution strategy is best suited for use with handlers guaranteed
+to never reject.
 
 ```ts
 const mySignal = Signal.createAsync({ parallel: true });
@@ -232,7 +229,7 @@ await mySignal();
 ### Wrapping an EventEmitter
 
 If you have an EventEmitter that you wish to 'signalify' you can do so by simply
-passing the signal itself to the `addEventListener` function:
+passing a signal instance to the `addEventListener` function:
 
 ```ts
 const confirmed = Signal.create<MouseEvent>();
