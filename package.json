@@ -25,6 +25,7 @@
 	],
 	"scripts": {
 		"build": "./script/build.sh",
+		"prepublishOnly": "yarn build",
 		"test": "ts-mocha -p ./config/tsconfig.mocha.json ./src/tests/**/*.ts"
 	},
 	"devDependencies": {
