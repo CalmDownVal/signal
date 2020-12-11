@@ -4,7 +4,7 @@ import * as sinon from 'sinon';
 import * as Signal from '..';
 
 describe('Signal.on(), Signal.once() and triggering', () => {
-	it('should register and correctly execute a basic handler', () => {
+	it('should register and correctly execute a handler', () => {
 		const handler = sinon.fake();
 		const test = Signal.create<any>();
 
@@ -17,7 +17,7 @@ describe('Signal.on(), Signal.once() and triggering', () => {
 		assert(handler.calledWith(1, 2, 3));
 	});
 
-	it('should automatically remove "once" handlers after first invocation', () => {
+	it('should auto-remove `once` handlers after first invocation', () => {
 		const handler = sinon.fake();
 		const test = Signal.create();
 
@@ -28,7 +28,7 @@ describe('Signal.on(), Signal.once() and triggering', () => {
 		assert(handler.calledOnce);
 	});
 
-	it('shout invoke double registered handlers twice', () => {
+	it('should respect handlers registered multiple times', () => {
 		const handler = sinon.fake();
 		const test = Signal.create();
 
@@ -41,41 +41,77 @@ describe('Signal.on(), Signal.once() and triggering', () => {
 });
 
 describe('Signal.off()', () => {
-	it('should return FALSE when the handler does not exist', () => {
-		const handler = () => undefined;
-		const test = Signal.create();
+	describe('Return value', () => {
+		it('should return FALSE when a handler is not found', () => {
+			const handler = () => undefined;
+			const test = Signal.create();
 
-		assert(Signal.off(test, handler) === false);
+			assert(Signal.off(test, handler) === false);
+		});
+
+		it('should return FALSE when no handlers are registered', () => {
+			const test = Signal.create();
+
+			assert(Signal.off(test) === false);
+		});
+
+		it('should return TRUE when a handler is found and removed', () => {
+			const handler = () => undefined;
+			const test = Signal.create();
+
+			Signal.on(test, handler);
+			assert(Signal.off(test, handler) === true);
+		});
+
+		it('should return TRUE when handlers are registered', () => {
+			const handler = () => undefined;
+			const test = Signal.create();
+
+			Signal.on(test, handler);
+			assert(Signal.off(test) === true);
+		});
 	});
 
-	it('should return TRUE when the handler is found and removed', () => {
-		const handler = () => undefined;
-		const test = Signal.create();
+	describe('Handler list manipulation', () => {
+		it('should not trigger handlers after de-registration', () => {
+			const handler0 = sinon.fake();
+			const handler1 = sinon.fake();
+			const test = Signal.create();
 
-		Signal.on(test, handler);
-		assert(Signal.off(test, handler) === true);
-	});
+			Signal.on(test, handler0);
+			Signal.on(test, handler1);
+			Signal.off(test, handler0);
+			test();
 
-	it('should not trigger handlers after de-registration', () => {
-		const handler = sinon.fake();
-		const test = Signal.create();
+			assert(handler0.notCalled);
+			assert(handler1.calledOnce);
+		});
 
-		Signal.on(test, handler);
-		Signal.off(test, handler);
-		test();
+		it('should only remove one handler registration at a time', () => {
+			const handler = sinon.fake();
+			const test = Signal.create();
 
-		assert(handler.notCalled);
-	});
+			Signal.on(test, handler);
+			Signal.on(test, handler);
+			Signal.off(test, handler);
+			test();
 
-	it('should only remove one handler registration at a time', () => {
-		const handler = sinon.fake();
-		const test = Signal.create();
+			assert(handler.calledOnce);
+		});
 
-		Signal.on(test, handler);
-		Signal.on(test, handler);
-		Signal.off(test, handler);
-		test();
+		it('should remove all handlers', () => {
+			const handler0 = sinon.fake();
+			const handler1 = sinon.fake();
+			const test = Signal.create();
 
-		assert(handler.calledOnce);
+			Signal.on(test, handler0);
+			Signal.on(test, handler1);
+
+			Signal.off(test);
+			test();
+
+			assert(handler0.notCalled);
+			assert(handler1.notCalled);
+		});
 	});
 });

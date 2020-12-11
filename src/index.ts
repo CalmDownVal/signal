@@ -141,8 +141,11 @@ export function create<TArgs = void>(options: SignalOptions = {}): Signal<TArgs>
 export function off<TArgs>(signal: Signal<TArgs>, handler?: Handler<TArgs>): boolean {
 	const { list } = signal;
 	if (handler === undefined) {
+		if (list.length === 0) {
+			return false;
+		}
 		signal.lock();
-		list.splice(0, list.length);
+		(signal as any).list = [];
 		return true;
 	}
 

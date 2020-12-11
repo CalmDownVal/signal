@@ -58,6 +58,8 @@ describe('async serial strategy', () => {
 		await pending;
 
 		// since b rejects, c should not get called
+		assert(a.calledOnce);
+		assert(b.calledOnce);
 		assert(c.notCalled);
 	});
 });
