@@ -3,56 +3,19 @@ import * as sinon from 'sinon';
 
 import * as Signal from '..';
 
-describe('Signal.on(), Signal.once() and triggering', () => {
-	it('should register and correctly execute a handler', () => {
-		const handler = sinon.fake();
-		const test = Signal.create<any>();
-
-		Signal.on(test, handler);
-		test('123');
-		test(1, 2, 3);
-
-		assert(handler.calledTwice);
-		assert(handler.calledWith('123'));
-		assert(handler.calledWith(1, 2, 3));
-	});
-
-	it('should auto-remove `once` handlers after first invocation', () => {
-		const handler = sinon.fake();
-		const test = Signal.create();
-
-		Signal.once(test, handler);
-		test();
-		test();
-
-		assert(handler.calledOnce);
-	});
-
-	it('should respect handlers registered multiple times', () => {
-		const handler = sinon.fake();
-		const test = Signal.create();
-
-		Signal.on(test, handler);
-		Signal.on(test, handler);
-		test();
-
-		assert(handler.calledTwice);
-	});
-});
-
 describe('Signal.off()', () => {
 	describe('Return value', () => {
 		it('should return FALSE when a handler is not found', () => {
 			const handler = () => undefined;
 			const test = Signal.create();
 
-			assert(Signal.off(test, handler) === false);
+			assert.strictEqual(Signal.off(test, handler), false);
 		});
 
 		it('should return FALSE when no handlers are registered', () => {
 			const test = Signal.create();
 
-			assert(Signal.off(test) === false);
+			assert.strictEqual(Signal.off(test), false);
 		});
 
 		it('should return TRUE when a handler is found and removed', () => {
@@ -60,7 +23,7 @@ describe('Signal.off()', () => {
 			const test = Signal.create();
 
 			Signal.on(test, handler);
-			assert(Signal.off(test, handler) === true);
+			assert.strictEqual(Signal.off(test, handler), true);
 		});
 
 		it('should return TRUE when handlers are registered', () => {
@@ -68,7 +31,7 @@ describe('Signal.off()', () => {
 			const test = Signal.create();
 
 			Signal.on(test, handler);
-			assert(Signal.off(test) === true);
+			assert.strictEqual(Signal.off(test), true);
 		});
 	});
 

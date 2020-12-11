@@ -19,93 +19,95 @@ const delay = (then: () => any, ms: number) =>
 			}
 		}, ms)));
 
-describe('async serial strategy', () => {
-	it('should invoke handlers one at a time', async () => {
-		const a = delay(() => 1, 100);
-		const b = delay(() => 2, 100);
+describe('Asynchronous signals', () => {
+	describe('Serial strategy', () => {
+		it('should invoke handlers one at a time', async () => {
+			const a = delay(() => 1, 100);
+			const b = delay(() => 2, 100);
 
-		const test = Signal.createAsync();
-		Signal.on(test, a);
-		Signal.on(test, b);
+			const test = Signal.createAsync();
+			Signal.on(test, a);
+			Signal.on(test, b);
 
-		const pending = test();
-		assert(a.calledOnce);
-		assert(b.notCalled);
+			const pending = test();
+			assert(a.calledOnce);
+			assert(b.notCalled);
 
-		await clock.tickAsync(100);
-		assert(b.calledOnce);
+			await clock.tickAsync(100);
+			assert(b.calledOnce);
 
-		await clock.tickAsync(100);
-		await pending;
+			await clock.tickAsync(100);
+			await pending;
+		});
+
+		it('should immediately propagate a rejection', async () => {
+			const error = new Error();
+
+			const a = delay(() => 1, 100);
+			const b = delay(() => {
+				throw error;
+			}, 100);
+			const c = delay(() => 3, 100);
+
+			const test = Signal.createAsync();
+			Signal.on(test, a);
+			Signal.on(test, b);
+			Signal.on(test, c);
+
+			const pending = assert.rejects(test, e => e === error);
+			await clock.tickAsync(200);
+			await pending;
+
+			// since b rejects, c should not get called
+			assert(a.calledOnce);
+			assert(b.calledOnce);
+			assert(c.notCalled);
+		});
 	});
 
-	it('should immediately propagate a rejection', async () => {
-		const error = new Error();
+	describe('Parallel strategy', () => {
+		it('should invoke handlers all at once', async () => {
+			const a = delay(() => 1, 100);
+			const b = delay(() => 2, 100);
 
-		const a = delay(() => 1, 100);
-		const b = delay(() => {
-			throw error;
-		}, 100);
-		const c = delay(() => 3, 100);
+			const test = Signal.createAsync({ parallel: true });
+			Signal.on(test, a);
+			Signal.on(test, b);
 
-		const test = Signal.createAsync();
-		Signal.on(test, a);
-		Signal.on(test, b);
-		Signal.on(test, c);
+			const pending = test();
+			assert(a.calledOnce);
+			assert(b.calledOnce);
 
-		const pending = assert.rejects(test, e => e === error);
-		await clock.tickAsync(200);
-		await pending;
+			await clock.tickAsync(100);
+			await pending;
+		});
 
-		// since b rejects, c should not get called
-		assert(a.calledOnce);
-		assert(b.calledOnce);
-		assert(c.notCalled);
-	});
-});
+		it('should propagate the first rejection and suppress any others', async () => {
+			const error = new Error();
 
-describe('async parallel strategy', () => {
-	it('should invoke handlers all at once', async () => {
-		const a = delay(() => 1, 100);
-		const b = delay(() => 2, 100);
+			const a = delay(() => 1, 100);
+			const b = delay(() => {
+				throw error;
+			}, 100);
 
-		const test = Signal.createAsync({ parallel: true });
-		Signal.on(test, a);
-		Signal.on(test, b);
+			// fake a promise
+			const cThen = sinon.fake();
+			const c = () => ({ then: cThen } as never);
 
-		const pending = test();
-		assert(a.calledOnce);
-		assert(b.calledOnce);
+			const test = Signal.createAsync({ parallel: true });
+			Signal.on(test, a);
+			Signal.on(test, b);
+			Signal.on(test, c);
 
-		await clock.tickAsync(100);
-		await pending;
-	});
+			const pending = assert.rejects(test, e => e === error);
+			await clock.tickAsync(100);
+			await pending;
 
-	it('should propagate the first rejection and suppress any others', async () => {
-		const error = new Error();
-
-		const a = delay(() => 1, 100);
-		const b = delay(() => {
-			throw error;
-		}, 100);
-
-		// fake a promise
-		const cThen = sinon.fake();
-		const c = () => ({ then: cThen } as never);
-
-		const test = Signal.createAsync({ parallel: true });
-		Signal.on(test, a);
-		Signal.on(test, b);
-		Signal.on(test, c);
-
-		const pending = assert.rejects(test, e => e === error);
-		await clock.tickAsync(100);
-		await pending;
-
-		// handlers must always receive a reject handler
-		assert(cThen.calledOnceWith(
-			sinon.match.func,
-			sinon.match.func
-		));
+			// handlers must always receive a reject handler
+			assert(cThen.calledOnceWith(
+				sinon.match.func,
+				sinon.match.func
+			));
+		});
 	});
 });
