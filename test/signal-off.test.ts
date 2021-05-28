@@ -1,5 +1,6 @@
 import assert from 'assert';
-import * as sinon from 'sinon';
+
+import sinon from 'sinon';
 
 import * as Signal from '..';
 

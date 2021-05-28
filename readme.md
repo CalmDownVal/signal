@@ -12,6 +12,7 @@ A lightweight event dispatcher.
   - [Async Signals](#async-signals)
     - [Serial Execution](#serial-execution)
     - [Parallel Execution](#parallel-execution)
+  - [Forwarding this](#forwarding-this)
   - [Wrapping an EventEmitter](#wrapping-an-eventemitter)
 
 ## Installation
@@ -33,8 +34,8 @@ yarn add @calmdownval/signal
 
 - ✅ supports async handlers with serial and parallel invocation strategies
 - ✅ does not rely on class inheritance or mixins
-- ✅ written with TypeScript in mind
-- ✅ tiny, without any dependencies
+- ✅ written and compatible with TypeScript
+- ✅ tiny, without any dependencies (~1.5 kB)
 - ✅ smoothly integrates with standard event emitters
 - ✅ does not rely on string event names, which are much harder to use with
   autocompletion or type-checking and present a frequent source of silly bugs
@@ -42,7 +43,7 @@ yarn add @calmdownval/signal
 
 ### Cons
 
-- ❌ is non-standard and will involve some learning curve and getting used to
+- ❌ is non-standard and will involve some learning curve
 - ❌ not suitable for event bubbling
 
 ## Usage Guide
@@ -110,13 +111,14 @@ Adding the same handler multiple times will cause it to be invoked that amount
 of times when the signal is triggered. This is intended behavior.
 
 ```ts
-const test = Signal.create();
+const mySignal = Signal.create();
 const onTrigger = () => console.log('bar');
 
-Signal.on(test, onTrigger);
-Signal.on(test, onTrigger);
+Signal.on(mySignal, onTrigger);
+Signal.on(mySignal, onTrigger);
 
-test(); // will print 'bar' twice
+// will print 'bar' twice
+mySignal();
 ```
 
 ### Removing Handlers
@@ -145,12 +147,15 @@ removed any handlers.
 ### Triggering a Signal
 
 Each signal instance is actually a function. Triggering it is as simple as
-adding a pair of brackets! You can pass any amount of arguments to a signal,
-they will be forwarded to each handler. Synchronous signals do not return any
-value (void), asynchronous return a `Promise<void>`.
+adding a pair of brackets! You can pass any data as the first argument to a
+signal, it will be forwarded to each handler. Typically this will be an event
+object with additional information.
+
+Synchronous signals do not return any value (void), asynchronous return a
+`Promise<void>`.
 
 ```ts
-mySignal('arg1', 123, /* ... */);
+mySignal(123);
 ```
 
 Synchronous signals will always invoke handlers in series. If any one of them
@@ -159,10 +164,10 @@ handle thrown exceptions:
 
 ```ts
 try {
-  mySignal('arg1');
+  mySignal();
 }
-catch (error) {
-  console.error('one of the handlers threw an exception', error);
+catch (ex) {
+  console.error('one of the handlers threw an exception', ex);
 }
 ```
 
@@ -172,7 +177,7 @@ that *any potential promise rejections will not be handled!*
 
 ### Async Signals
 
-Asynchronous signal interface is almost identical to their synchronous
+Asynchronous signal interface is almost identical to its synchronous
 counterpart. The key difference is that an async signal will check the return
 type of every handler and handle all promises it receives.
 
@@ -188,15 +193,15 @@ option (see [Creating a Signal](#creating-a-signal)).
 The default strategy is serial execution. Execution will await each handler
 before moving onto the next one.
 
-This is the default strategy as it mimics the synchronous signal execution.
+This is the default strategy as it's the same one synchronous signals use.
 A promise rejection will immediately propagate upwards and terminate the
 execution. Handlers further down the list will not execute in such case.
 
 ```ts
 const mySignal = Signal.createAsync();
 
-Signal.on(mySignal, () => delay(100));
-Signal.on(mySignal, () => delay(100));
+Signal.on(mySignal, () => sleep(100));
+Signal.on(mySignal, () => sleep(100));
 
 // will take ~200ms
 await mySignal();
@@ -209,27 +214,62 @@ once *all* have resolved. If a handler rejects the wrapping promise returned by
 the signal will immediately reject as well. This is similar to the behavior of
 `Promise.all`.
 
-Note that if a handler rejects other handlers continue their execution and there
-is no way to await them. If additional rejections occur, they will be
-suppressed as the wrapping promise was already rejected with the first error.
-
-The parallel execution strategy is best suited for use with handlers guaranteed
-to never reject.
-
 ```ts
 const mySignal = Signal.createAsync({ parallel: true });
 
-Signal.on(mySignal, () => delay(100));
-Signal.on(mySignal, () => delay(100));
+Signal.on(mySignal, () => sleep(100));
+Signal.on(mySignal, () => sleep(100));
 
 // will take ~100ms
 await mySignal();
 ```
 
+Note that if a handler rejects other handlers continue their execution and there
+is no way to await them. If additional rejections occur, they will be suppressed
+as the wrapping promise was already rejected with the first error.
+
+It is a good practice to either make sure none of the handlers ever reject or
+to pass an abort signal through the event object so that you have some control
+over the still-pending actions if a rejection occurs, e.g.:
+
+```ts
+const controller = new AbortController();
+try {
+  await mySignal({ abortSignal: controller.signal });
+}
+catch (ex) {
+  controller.abort();
+  console.error(ex);
+}
+```
+
+### Forwarding this
+
+Signals forward `this` to all its handlers, however there are several caveats to
+keep in mind when using this feature. These stem from how JavaScript functions
+and the binding of `this` work.
+
+Any handler that needs to use the forwarded `this` has to be a regular function,
+not an arrow function. Signals also need to be triggered using `.call` instead
+of a regular call.
+
+```ts
+const context = { value: 123 };
+const mySignal = Signal.create();
+
+Signal.on(mySignal, function () {
+  console.log(this);
+});
+
+// will print '123'
+mySignal.call(context);
+```
+
 ### Wrapping an EventEmitter
 
-If you have an EventEmitter that you wish to 'signalify' you can do so by simply
-passing a signal instance to the `addEventListener` function:
+If you have an EventEmitter (Node) or an EventTarget (browser) that you wish to
+'signalify' you can do so by passing a signal instance to the `addEventListener`
+method:
 
 ```ts
 const confirmed = Signal.create<MouseEvent>();
@@ -238,5 +278,5 @@ const button = document.getElementById('ok-button');
 button.addEventListener('click', confirmed);
 ```
 
-Now every time the button is clicked the `confirmed` signal will trigger passing
-the MouseEvent object to all its handlers.
+Now every time the button is clicked the `confirmed` signal will trigger
+forwarding the `MouseEvent` object to all its handlers.

@@ -1,8 +1,8 @@
-.vscode/
-config/
-script/
-src/
+.vscode
+src
+test
 .editorconfig
 .eslintrc
+rollup.config.js
 tsconfig.json
 yarn.lock

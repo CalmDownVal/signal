@@ -5,12 +5,13 @@
 			"esnext"
 		],
 		"newLine": "lf",
-		"removeComments": true,
+		"noEmit": true,
 		"skipLibCheck": true,
 		"strict": true,
-		"types": []
+		"types": [],
+		"target": "esnext"
 	},
-	"files": [
-		"./src/index.ts"
+	"include": [
+		"./src/**/*"
 	]
 }

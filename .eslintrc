@@ -1,109 +1,28 @@
 {
-	"extends": [
-		"plugin:@typescript-eslint/recommended",
-		"plugin:import/errors",
-		"plugin:import/warnings",
-		"plugin:import/typescript"
-	],
-	"parser": "@typescript-eslint/parser",
-	"parserOptions": {
-		"ecmaFeatures": {
-			"jsx": true
-		},
-		"ecmaVersion": 2018,
-		"sourceType": "module"
-	},
 	"root": true,
+	"extends": [
+		"@calmdownval/eslint-config",
+		"@calmdownval/eslint-config/typescript"
+	],
 	"rules": {
-		"no-bitwise": "off",
-		"no-trailing-spaces": "warn",
-		"no-console": "warn",
-		"no-alert": "warn",
-		"no-shadow": "error",
-		"eqeqeq": "error",
-		"camelcase": "warn",
-		"curly": "warn",
-		"eol-last": "warn",
-		"no-empty": "warn",
-		"no-param-reassign": "error",
-		"arrow-spacing": "warn",
-		"prefer-rest-params": "off",
-		"prefer-spread": "off",
-		"arrow-body-style": [
-			"warn",
-			"as-needed"
-		],
-		"one-var": [
-			"warn",
-			"never"
-		],
-		"linebreak-style": [
-			"warn",
-			"unix"
-		],
-		"semi": [
-			"error",
-			"always"
-		],
-		"quotes": [
-			"warn",
-			"single",
-			{
-				"avoidEscape": true,
-				"allowTemplateLiterals": false
-			}
-		],
-		"quote-props": [
-			"warn",
-			"as-needed"
-		],
-		"arrow-parens": [
-			"warn",
-			"as-needed"
-		],
-
-		// typescript
-		"@typescript-eslint/explicit-function-return-type": "off",
-		"@typescript-eslint/no-untyped-public-signature": "off",
-		"@typescript-eslint/no-non-null-assertion": "off",
-		"@typescript-eslint/no-inferrable-types": "off",
-		"@typescript-eslint/explicit-member-accessibility": "warn",
-		"@typescript-eslint/no-explicit-any": "off",
-		"indent": "off",
-		"@typescript-eslint/indent": [
-			"warn",
-			"tab",
-			{
-				"SwitchCase": 1
-			}
-		],
-		"brace-style": "off",
-		"@typescript-eslint/brace-style": [
-			"warn",
-			"stroustrup"
-		],
-
-		// imports
-		"import/order": [
-			"warn",
-			{
-				"groups": [
-					[ "builtin", "external", "internal" ],
-					[ "sibling", "parent", "index" ]
-				],
-				"pathGroups": [
-					{
-						"pattern": "~/**",
-						"group": "external",
-						"position": "after"
-					}
-				],
-				"newlines-between": "always",
-				"alphabetize": {
-					"order": "asc",
-					"caseInsensitive": true
-				}
-			}
+		"prefer-destructuring": "off",
+		"prefer-rest-params": "off"
+	},
+	"parserOptions": {
+		"project": [
+			"./tsconfig.json",
+			"./test/tsconfig.json"
 		]
-	}
+	},
+	"settings": {
+		"import/resolver": {
+			"@calmdownval/eslint-import-resolver-typescript": {
+				"project": [
+					"./tsconfig.json",
+					"./test/tsconfig.json"
+				]
+			}
+		}
+	},
+	"ignorePatterns": "rollup.config.js"
 }

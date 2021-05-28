@@ -1,23 +1,20 @@
 import assert from 'assert';
-import * as sinon from 'sinon';
+
+import sinon from 'sinon';
 
 import * as Signal from '..';
 
-let clock: sinon.SinonFakeTimers;
-before(() => {
-	clock = sinon.useFakeTimers();
-});
-
-const delay = (then: () => any, ms: number) =>
-	sinon.spy(() => new Promise((resolve, reject) =>
-		setTimeout(() => {
-			try {
-				resolve(then());
-			}
-			catch (error) {
-				reject(error);
-			}
-		}, ms)));
+const clock = sinon.useFakeTimers();
+const delay = (then: () => any, ms: number) => sinon.spy(() => new Promise<123>((resolve, reject) => {
+	setTimeout(() => {
+		try {
+			resolve(then());
+		}
+		catch (ex) {
+			reject(ex);
+		}
+	}, ms);
+}));
 
 describe('Asynchronous signals', () => {
 	describe('Serial strategy', () => {
@@ -92,7 +89,7 @@ describe('Asynchronous signals', () => {
 
 			// fake a promise
 			const cThen = sinon.fake();
-			const c = () => ({ then: cThen } as never);
+			const c = () => ({ then: cThen } as any);
 
 			const test = Signal.createAsync({ parallel: true });
 			Signal.on(test, a);
