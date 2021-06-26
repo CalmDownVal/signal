@@ -1,10 +1,10 @@
-import type { AsyncSignal, AsyncSignalOptions, WrappedHandler } from './types';
+import type { AsyncSignal, AsyncSignalOptions, Handlers } from './types';
 
 function isPromise(obj: any): obj is Promise<any> {
 	return obj && typeof obj.then === 'function';
 }
 
-function runInParallel<T>(thisArg: any, handlers: readonly WrappedHandler<T>[], event: T) {
+function runInParallel<T>(thisArg: any, handlers: Handlers<T>, event: T) {
 	return new Promise<void>((resolve, reject) => {
 		let pending = 0;
 		const fulfill = () => {
@@ -24,7 +24,7 @@ function runInParallel<T>(thisArg: any, handlers: readonly WrappedHandler<T>[], 
 	});
 }
 
-function runInSeries<T>(thisArg: any, handlers: WrappedHandler<T>[], event: T) {
+function runInSeries<T>(thisArg: any, handlers: Handlers<T>, event: T) {
 	return new Promise<void>((resolve, reject) => {
 		const length = handlers.length;
 		let index = 0;
@@ -59,8 +59,8 @@ export function createAsync<T = void>(options?: AsyncSignalOptions): AsyncSignal
 		});
 	};
 
-	signal.handlers = [] as WrappedHandler<T>[];
-	signal.lock = (handlers?: WrappedHandler<T>[]) => {
+	signal.handlers = [] as Handlers<T>;
+	signal.lock = (handlers?: Handlers<T>) => {
 		if (isUsingList) {
 			signal.handlers = handlers ?? signal.handlers.slice();
 			isUsingList = false;

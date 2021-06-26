@@ -3,16 +3,18 @@ export interface Handler<T> {
 }
 
 export interface WrappedHandler<T> extends Handler<T> {
-	inner?: Handler<T>;
+	readonly inner?: Handler<T>;
 }
+
+export type Handlers<T> = readonly WrappedHandler<T>[];
 
 export interface HandlerOptions {
 	once?: boolean;
 }
 
 interface SignalMixin<T> {
-	readonly handlers: WrappedHandler<T>[];
-	readonly lock: (handlers?: WrappedHandler<T>[]) => void;
+	readonly handlers: Handlers<T>;
+	readonly lock: (handlers?: Handlers<T>) => void;
 }
 
 type Args<T> = T extends void ? [] : [ event: T ];

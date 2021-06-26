@@ -1,4 +1,4 @@
-import type { SyncSignal, SyncSignalOptions, WrappedHandler } from './types';
+import type { Handlers, SyncSignal, SyncSignalOptions } from './types';
 
 export function createSync<T = void>(_options?: SyncSignalOptions): SyncSignal<T> {
 	let isUsingList = false;
@@ -17,8 +17,8 @@ export function createSync<T = void>(_options?: SyncSignalOptions): SyncSignal<T
 		}
 	};
 
-	signal.handlers = [] as WrappedHandler<T>[];
-	signal.lock = (handlers?: WrappedHandler<T>[]) => {
+	signal.handlers = [] as Handlers<T>;
+	signal.lock = (handlers?: Handlers<T>) => {
 		if (isUsingList) {
 			signal.handlers = handlers ?? signal.handlers.slice();
 			isUsingList = false;

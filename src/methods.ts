@@ -72,11 +72,13 @@ export function on<T>(signal: Signal<T>, handler: Handler<T>, options?: HandlerO
 			return handler.call(this, event!);
 		};
 
-		callback.inner = handler;
+		// mutation here is okay
+		(callback as any).inner = handler;
 	}
 
+	// mutation here is okay, too
 	signal.lock();
-	signal.handlers.push(callback);
+	(signal.handlers as any[]).push(callback);
 }
 
 export function once<T>(signal: Signal<T>, handler: Handler<T>): void {
