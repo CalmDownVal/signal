@@ -1,6 +1,5 @@
 {
 	"compilerOptions": {
-		"charset": "utf8",
 		"lib": [
 			"esnext"
 		],
@@ -8,6 +7,7 @@
 		"noEmit": true,
 		"skipLibCheck": true,
 		"strict": true,
+		"stripInternal": true,
 		"types": [],
 		"target": "esnext"
 	},

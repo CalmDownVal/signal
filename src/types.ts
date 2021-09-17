@@ -1,19 +1,23 @@
-export interface Handler<T> {
-	(event: T): any;
+export interface SignalHandler<T> {
+	(event: T): void;
 }
 
-export interface WrappedHandler<T> extends Handler<T> {
-	readonly inner?: Handler<T>;
-}
-
-export type Handlers<T> = readonly WrappedHandler<T>[];
-
-export interface HandlerOptions {
+export interface SignalHandlerOptions {
 	once?: boolean;
 }
 
+/** @internal */
+export interface WrappedHandler<T> extends SignalHandler<T> {
+	readonly inner?: SignalHandler<T>;
+}
+
+/** @internal */
+export type Handlers<T> = readonly WrappedHandler<T>[];
+
 interface SignalMixin<T> {
+	/** @internal */
 	readonly handlers: Handlers<T>;
+	/** @internal */
 	readonly lock: (handlers?: Handlers<T>) => void;
 }
 
@@ -43,3 +47,15 @@ export type Signal<T = void> =
 export type SignalOptions =
 	| SyncSignalOptions
 	| AsyncSignalOptions;
+
+/**
+ * @deprecated This type is deprecated and will be removed in future major
+ * version. Prefer using `SignalHandler<T>`.
+ */
+export type Handler<T> = SignalHandler<T>;
+
+/**
+ * @deprecated This type is deprecated and will be removed in future major
+ * version. Prefer using `SignalHandlerOptions`.
+ */
+export type HandlerOptions = SignalHandlerOptions;

@@ -6,8 +6,8 @@ export function createSync<T = void>(_options?: SyncSignalOptions): SyncSignal<T
 	const signal = function (this: any, event?: T) {
 		isUsingList = true;
 		try {
-			const handlers = signal.handlers;
-			const length = handlers.length;
+			const { handlers } = signal;
+			const { length } = handlers;
 			for (let i = 0; i < length; ++i) {
 				void handlers[i].call(this, event!);
 			}

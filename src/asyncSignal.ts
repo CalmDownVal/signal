@@ -13,7 +13,7 @@ function runInParallel<T>(thisArg: any, handlers: Handlers<T>, event: T) {
 			}
 		};
 
-		const length = handlers.length;
+		const { length } = handlers;
 		for (let index = 0; index < length; ++index) {
 			const result = handlers[index].call(thisArg, event);
 			if (isPromise(result)) {
@@ -26,7 +26,7 @@ function runInParallel<T>(thisArg: any, handlers: Handlers<T>, event: T) {
 
 function runInSeries<T>(thisArg: any, handlers: Handlers<T>, event: T) {
 	return new Promise<void>((resolve, reject) => {
-		const length = handlers.length;
+		const { length } = handlers;
 		let index = 0;
 
 		const next = () => {

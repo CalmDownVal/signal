@@ -233,15 +233,18 @@ to pass an abort signal through the event object so that you have some control
 over the still-pending actions if a rejection occurs, e.g.:
 
 ```ts
-const controller = new AbortController();
+const abort = Signal.createSync();
 try {
-  await mySignal({ abortSignal: controller.signal });
+  await mySignal({ abort });
 }
 catch (ex) {
-  controller.abort();
   console.error(ex);
+  abort();
 }
 ```
+
+Note that the above example has nothing to do with browser `AbortController` or
+`AbortSignal`. However, you could use those for the same purpose too!
 
 ### Forwarding this
 

@@ -4,10 +4,6 @@
 		"@calmdownval/eslint-config",
 		"@calmdownval/eslint-config/typescript"
 	],
-	"rules": {
-		"prefer-destructuring": "off",
-		"prefer-rest-params": "off"
-	},
 	"parserOptions": {
 		"project": [
 			"./tsconfig.json",

@@ -3,9 +3,9 @@ import { createSync } from './syncSignal';
 import type {
 	AsyncSignal,
 	AsyncSignalOptions,
-	Handler,
-	HandlerOptions,
 	Signal,
+	SignalHandler,
+	SignalHandlerOptions,
 	SignalOptions,
 	SyncSignal,
 	SyncSignalOptions,
@@ -20,9 +20,9 @@ export function create<T = void>(options?: SignalOptions): Signal<T> {
 		: createSync();
 }
 
-export function off<T>(signal: Signal<T>, handler?: Handler<T>): boolean {
+export function off<T>(signal: Signal<T>, handler?: SignalHandler<T>): boolean {
 	const oldHandlers = signal.handlers;
-	const length = oldHandlers.length;
+	const { length } = oldHandlers;
 
 	if (length === 0) {
 		return false;
@@ -64,7 +64,7 @@ export function off<T>(signal: Signal<T>, handler?: Handler<T>): boolean {
 	return true;
 }
 
-export function on<T>(signal: Signal<T>, handler: Handler<T>, options?: HandlerOptions): void {
+export function on<T>(signal: Signal<T>, handler: SignalHandler<T>, options?: SignalHandlerOptions): void {
 	let callback: WrappedHandler<T> = handler;
 	if (options?.once) {
 		callback = function (this: any, event?: T) {
@@ -81,6 +81,6 @@ export function on<T>(signal: Signal<T>, handler: Handler<T>, options?: HandlerO
 	(signal.handlers as any[]).push(callback);
 }
 
-export function once<T>(signal: Signal<T>, handler: Handler<T>): void {
+export function once<T>(signal: Signal<T>, handler: SignalHandler<T>): void {
 	on(signal, handler, { once: true });
 }
