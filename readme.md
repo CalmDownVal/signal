@@ -14,6 +14,8 @@ A lightweight event dispatcher.
     - [Parallel Execution](#parallel-execution)
   - [Forwarding this](#forwarding-this)
   - [Wrapping an EventEmitter](#wrapping-an-eventemitter)
+  - [Signal Backend](#signal-backend)
+- [Changelog](#changelog)
 
 ## Installation
 
@@ -35,11 +37,10 @@ yarn add @calmdownval/signal
 - ✅ supports async handlers with serial and parallel invocation strategies
 - ✅ does not rely on class inheritance or mixins
 - ✅ written and compatible with TypeScript
-- ✅ tiny, without any dependencies (~1.5 kB)
+- ✅ tiny, without any dependencies (~2 kB)
 - ✅ smoothly integrates with standard event emitters
-- ✅ does not rely on string event names, which are much harder to use with
-  autocompletion or type-checking and present a frequent source of silly bugs
-  due to typos
+- ✅ does not rely on event name strings, which are harder to use with
+  autocompletion or type-checking and can be a source of silly bugs due to typos
 
 ### Cons
 
@@ -58,7 +59,7 @@ import * as Signal from '@calmdownval/signal';
 ### Creating a Signal
 
 To create a signal call the `Signal.create` function. You can pass an options
-object with the following fields:
+object with the following properties:
 
 - `async: boolean = false`  
   controls whether the signal should act with respect to promises returned by
@@ -66,6 +67,9 @@ object with the following fields:
 - `parallel: boolean = false`  
   controls whether asynchronous handlers will run in parallel or in series, only
   has effect if async is set to true
+- `backend: 'array' | 'es6map' = 'array'`  
+  controls which data structure is used to hold the handler collection, see the
+  [Signal Backend](#signal-backend) section for more information
 
 Internally this function only checks the async option and delegates execution
 to either `Signal.createSync` or `Signal.createAsync`.
@@ -85,6 +89,9 @@ const asyncSignal4 = Signal.create({
   async: true,
   parallel: true
 });
+
+// will use ES6 Map to hold its list of handlers
+const mapSignal = Signal.createSync({ backend: 'es6map' });
 ```
 
 ### Adding Handlers
@@ -97,8 +104,8 @@ Signal.on(mySignal, () => console.log('foo'));
 ```
 
 Handlers will be invoked every time the signal is triggered. You can also set
-the `once` flag to only invoke a handler once and then to automatically remove
-it from the handler list.
+the `once` flag to only invoke a handler once and then have it automatically
+removed from the handler list.
 
 ```ts
 Signal.on(mySignal, myHandler, { once: true });
@@ -107,31 +114,35 @@ Signal.on(mySignal, myHandler, { once: true });
 Signal.once(mySignal, myHandler);
 ```
 
-Adding the same handler multiple times will cause it to be invoked that amount
-of times when the signal is triggered. This is intended behavior.
+When a handler is first added with the `once` flag set and later added again
+normally, assuming the signal wasn't triggered between these operation, the
+`once` flag will be unset.
 
 ```ts
 const mySignal = Signal.create();
 const onTrigger = () => console.log('bar');
 
-Signal.on(mySignal, onTrigger);
+Signal.once(mySignal, onTrigger);
 Signal.on(mySignal, onTrigger);
 
-// will print 'bar' twice
+// will print 'bar'
+mySignal();
+
+// will print 'bar' again
 mySignal();
 ```
+
+Without involving the `once` flag, calling `on` multiple times with the same
+handler has no effect. Handlers are kept in a set (i.e. there are never any
+duplicates in the handler list).
 
 ### Removing Handlers
 
 To remove a handler (regardless of the once option), use the `Signal.off`
-function. It will search for the first occurrence of the handler and remove it
-from the list.
+function.
 
-If the same handler was added multiple times (by calling `.on` repeatedly), to
-fully remove it you must call `.off` the same amount of times.
-
-If no specific handler is provided via the second argument the `.off` function
-will remove all handlers registered for the given signal.
+If no specific handler is provided as the second argument the `.off` function
+will remove *all* handlers registered for the signal.
 
 ```ts
 // will remove the first found occurrence of myHandler
@@ -283,3 +294,52 @@ button.addEventListener('click', confirmed);
 
 Now every time the button is clicked the `confirmed` signal will trigger
 forwarding the `MouseEvent` object to all its handlers.
+
+### Signal Backend
+
+Signals offer the choice between arrays and ES6 Maps as the backing data
+structure holding the list of registered handlers.
+
+Array is the default structure as it is supported in every environment and
+offers the best performance for almost all use cases.
+
+ES6 Map is only available in newer JS environments. Maps should only be
+preferred when dealing with *a lot* of `on` and `off` calls and infrequent
+invocations, as they provide a significant boost in such cases. Otherwise maps
+have have a larger memory footprint, significantly decrease the performance of
+creating new signal instances and slightly reduce the performance of triggering
+them.
+
+```diff
+ create a signal instance
++  array   1,500,364,906 ops/sec ±0.15% (98 runs sampled)
+-  es6map     28,398,882 ops/sec ±2.45% (89 runs sampled)
+ 
+ trigger a signal with 1000 handlers
++  array         199,536 ops/sec ±0.41% (92 runs sampled)
+-  es6map        152,932 ops/sec ±1.56% (93 runs sampled)
+ 
+ add 1000 handlers, then clear
+-  array           2,446 ops/sec ±0.99% (97 runs sampled)
++  es6map          9,105 ops/sec ±6.49% (76 runs sampled)
+ 
+ attempt to remove an unknown handler from a signal with 1000 handlers
+-  array       1,706,999 ops/sec ±0.12% (99 runs sampled)
++  es6map    153,392,090 ops/sec ±1.49% (92 runs sampled)
+```
+
+The above benchmark was generated with NodeJS v16.2.0 (V8 version: 9.0.257.25)
+on an AMD Ryzen 9 5950X CPU. You can run it on your machine using
+`yarn benchmark`.
+
+## Changelog
+
+A list of breaking changes for every major version:
+
+- 3.0.0
+  - Handlers now must be unique, i.e. adding the same handler a second has no
+    effect anymore.
+  - Renamed type `Handler` to `SignalHandler`.
+  - Renamed type `HandlerOptions` to `SignalHandlerOptions`.
+- 2.0.0
+  - Signals now only pass through their first argument.
