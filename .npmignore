@@ -1,6 +1,7 @@
-.vscode
-src
-test
+.vscode/
+benchmark/
+src/
+test/
 .editorconfig
 .eslintrc
 rollup.config.js

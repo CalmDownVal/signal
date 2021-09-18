@@ -15,6 +15,7 @@ A lightweight event dispatcher.
   - [Forwarding this](#forwarding-this)
   - [Wrapping an EventEmitter](#wrapping-an-eventemitter)
   - [Signal Backend](#signal-backend)
+  - [Event Bubbling](#event-bubbling)
 - [Changelog](#changelog)
 
 ## Installation
@@ -34,10 +35,10 @@ yarn add @calmdownval/signal
 
 ### Pros
 
-- ✅ supports async handlers with serial and parallel invocation strategies
-- ✅ does not rely on class inheritance or mixins
+- ✅ supports async handlers and both serial or parallel invocation
 - ✅ written and compatible with TypeScript
 - ✅ tiny, without any dependencies (<2 kB)
+- ✅ does not rely on class inheritance or mixins
 - ✅ smoothly integrates with standard event emitters
 - ✅ does not rely on event name strings, which are harder to use with
   autocompletion or type-checking and can be a source of silly bugs due to typos
@@ -45,11 +46,10 @@ yarn add @calmdownval/signal
 ### Cons
 
 - ❌ is non-standard and will involve some learning curve
-- ❌ not suitable for event bubbling
 
 ## Usage Guide
 
-The library provides everything as named exports. The best approach to preserve
+The library provides everything as named exports. Usually the best approach for
 good code readability is to import the entire namespace as `Signal`.
 
 ```ts
@@ -264,19 +264,36 @@ keep in mind when using this feature. These stem from how JavaScript functions
 and the binding of `this` work.
 
 Any handler that needs to use the forwarded `this` has to be a regular function,
-not an arrow function. Signals also need to be triggered using `.call` instead
-of a regular call.
+not an arrow function. Signals also need to be called on the object that should
+be forwarded:
 
 ```ts
-const context = { value: 123 };
+const obj = {
+  value: 'foo',
+  mySignal: Signal.create()
+};
+
+Signal.on(obj.mySignal, function () {
+  console.log(this.value);
+});
+
+// will print 'foo'
+obj.mySignal();
+```
+
+When signals are not called on an object, it is necessary to trigger them using
+the `.call` method to pass through `this` correctly:
+
+```ts
+const obj = { value: 'bar' };
 const mySignal = Signal.create();
 
 Signal.on(mySignal, function () {
-  console.log(this);
+  console.log(this.value);
 });
 
-// will print '123'
-mySignal.call(context);
+// will print 'bar'
+mySignal.call(obj);
 ```
 
 ### Wrapping an EventEmitter
@@ -293,7 +310,7 @@ button.addEventListener('click', confirmed);
 ```
 
 Now every time the button is clicked the `confirmed` signal will trigger
-forwarding the `MouseEvent` object to all its handlers.
+forwarding the `MouseEvent` object as well as `this` to all its handlers.
 
 ### Signal Backend
 
@@ -331,6 +348,36 @@ them.
 The above benchmark was generated with NodeJS v16.2.0 (V8 version: 9.0.257.25)
 on an AMD Ryzen 9 5950X CPU. You can run it on your machine using
 `yarn benchmark`.
+
+### Event Bubbling
+
+Event bubbling is not implemented within the signal library, however it can be
+achieved with a helper function, e.g.:
+
+```ts
+import type { Signal, SignalArgs } from '@calmdownval/signal';
+
+type BubbleTarget<T, TSignal extends string> =
+  & { [K in TSignal]?: Signal<T> | null }
+  & { parent?: BubbleTarget<T, TSignal> | null };
+
+export async function bubble<T, TSignal extends string>(
+  target: BubbleTarget<T, TSignal>,
+  signal: TSignal,
+  ...args: SignalArgs<T>
+) {
+  let current: BubbleTarget<T, TSignal> | null | undefined = target;
+  do {
+    await current[signal]?.(...args);
+    current = current.parent;
+  }
+  while (current);
+}
+```
+
+Calling `bubble(obj, 'someEvent', event)` will trigger the `'someEvent'` signal
+with the `event` argument and then traverse upwards through parents triggering
+equivalent signals on each ancestor.
 
 ## Changelog
 
