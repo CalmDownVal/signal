@@ -337,9 +337,9 @@ on an AMD Ryzen 9 5950X CPU. You can run it on your machine using
 A list of breaking changes for every major version:
 
 - 3.0.0
-  - Handlers now must be unique, i.e. adding the same handler a second has no
-    effect anymore.
+  - Handlers are now kept as unique refs, i.e. adding the same handler multiple
+    times has no effect anymore.
   - Renamed type `Handler` to `SignalHandler`.
   - Renamed type `HandlerOptions` to `SignalHandlerOptions`.
 - 2.0.0
-  - Signals now only pass through their first argument.
+  - Signals now only pass the first argument to handlers.
