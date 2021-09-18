@@ -1,3 +1,4 @@
+import { createBackend } from './backend';
 import type { AsyncSignal, AsyncSignalOptions, Handlers } from './types';
 
 function isPromise(obj: any): obj is Promise<any> {
@@ -49,26 +50,15 @@ function runInSeries<T>(thisArg: any, handlers: Handlers<T>, event: T) {
 }
 
 export function createAsync<T = void>(options?: AsyncSignalOptions): AsyncSignal<T> {
-	let isUsingList = false;
-
+	const backend = createBackend<T>(options?.backend);
 	const run = options?.parallel ? runInParallel : runInSeries;
+
 	const signal = function (this: any, event?: T) {
-		isUsingList = true;
-		return run(this, signal.handlers, event!).finally(() => {
-			isUsingList = false;
+		return run(this, backend.beginRead(), event!).finally(() => {
+			backend.endRead();
 		});
 	};
 
-	signal.handlers = [] as Handlers<T>;
-	signal.lock = (handlers?: Handlers<T>) => {
-		if (isUsingList) {
-			signal.handlers = handlers ?? signal.handlers.slice();
-			isUsingList = false;
-		}
-		else if (handlers) {
-			signal.handlers = handlers;
-		}
-	};
-
+	signal.backend = backend;
 	return signal;
 }

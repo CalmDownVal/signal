@@ -1,5 +1,5 @@
-export interface SignalHandler<T> {
-	(event: T): void;
+export interface SignalHandler<T = void> {
+	(event: T): any;
 }
 
 export interface SignalHandlerOptions {
@@ -7,37 +7,51 @@ export interface SignalHandlerOptions {
 }
 
 /** @internal */
-export interface WrappedHandler<T> extends SignalHandler<T> {
-	readonly inner?: SignalHandler<T>;
+export interface WrappedSignalHandler<T> extends SignalHandler<T> {
+	$originalSignalHandler?: SignalHandler<T>;
+	$skipRemove?: true;
 }
 
 /** @internal */
-export type Handlers<T> = readonly WrappedHandler<T>[];
+export type Handlers<T> = readonly WrappedSignalHandler<T>[];
 
-interface SignalMixin<T> {
+/** @internal */
+export interface SignalBackend<T> {
+	add(handler: WrappedSignalHandler<T>): void;
+	remove(handler: SignalHandler<T>): boolean;
+	removeAll(): boolean;
+	beginRead(): Handlers<T>;
+	endRead(): void;
+}
+
+export type SignalBackendType = 'array' | 'es6map';
+
+export type SignalArgs<T> = T extends void ? [] : [ event: T ];
+
+interface SignalBase<T> {
 	/** @internal */
-	readonly handlers: Handlers<T>;
-	/** @internal */
-	readonly lock: (handlers?: Handlers<T>) => void;
+	readonly backend: SignalBackend<T>;
 }
 
-type Args<T> = T extends void ? [] : [ event: T ];
-
-export interface SyncSignal<T = void> extends SignalMixin<T> {
-	(...args: Args<T>): void;
+interface SignalOptionsBase {
+	backend?: SignalBackendType;
 }
 
-export interface SyncSignalOptions {
-	async?: false;
+export interface AsyncSignal<T = void> extends SignalBase<T> {
+	(...args: SignalArgs<T>): Promise<void>;
 }
 
-export interface AsyncSignal<T = void> extends SignalMixin<T> {
-	(...args: Args<T>): Promise<void>;
-}
-
-export interface AsyncSignalOptions {
+export interface AsyncSignalOptions extends SignalOptionsBase {
 	async?: true;
 	parallel?: boolean;
+}
+
+export interface SyncSignal<T = void> extends SignalBase<T> {
+	(...args: SignalArgs<T>): void;
+}
+
+export interface SyncSignalOptions extends SignalOptionsBase {
+	async?: false;
 }
 
 export type Signal<T = void> =
@@ -47,15 +61,3 @@ export type Signal<T = void> =
 export type SignalOptions =
 	| SyncSignalOptions
 	| AsyncSignalOptions;
-
-/**
- * @deprecated This type is deprecated and will be removed in future major
- * version. Prefer using `SignalHandler<T>`.
- */
-export type Handler<T> = SignalHandler<T>;
-
-/**
- * @deprecated This type is deprecated and will be removed in future major
- * version. Prefer using `SignalHandlerOptions`.
- */
-export type HandlerOptions = SignalHandlerOptions;

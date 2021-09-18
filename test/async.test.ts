@@ -5,10 +5,10 @@ import sinon from 'sinon';
 import * as Signal from '..';
 
 const clock = sinon.useFakeTimers();
-const delay = (then: () => any, ms: number) => sinon.spy(() => new Promise<123>((resolve, reject) => {
+const delay = <T>(fn: () => T, ms: number) => sinon.spy(() => new Promise<T>((resolve, reject) => {
 	setTimeout(() => {
 		try {
-			resolve(then());
+			resolve(fn());
 		}
 		catch (ex) {
 			reject(ex);
@@ -30,10 +30,10 @@ describe('Asynchronous signals', () => {
 			assert(a.calledOnce);
 			assert(b.notCalled);
 
-			await clock.tickAsync(100);
+			await clock.nextAsync();
 			assert(b.calledOnce);
 
-			await clock.tickAsync(100);
+			await clock.nextAsync();
 			await pending;
 		});
 
@@ -52,7 +52,7 @@ describe('Asynchronous signals', () => {
 			Signal.on(test, c);
 
 			const pending = assert.rejects(test, e => e === error);
-			await clock.tickAsync(200);
+			await clock.runAllAsync();
 			await pending;
 
 			// since b rejects, c should not get called
@@ -75,36 +75,34 @@ describe('Asynchronous signals', () => {
 			assert(a.calledOnce);
 			assert(b.calledOnce);
 
-			await clock.tickAsync(100);
+			await clock.runAllAsync();
 			await pending;
 		});
 
 		it('should propagate the first rejection and suppress any others', async () => {
-			const error = new Error();
+			const firstError = new Error();
+			const secondError = new Error();
 
-			const a = delay(() => 1, 100);
-			const b = delay(() => {
-				throw error;
+			const a = delay(() => {
+				throw firstError;
 			}, 100);
 
-			// fake a promise
-			const cThen = sinon.fake();
-			const c = () => ({ then: cThen } as any);
+			const b = delay(() => {
+				throw secondError;
+			}, 200);
+
+			const onUnhandledRejection = sinon.fake();
+			process.addListener('unhandledRejection', onUnhandledRejection);
 
 			const test = Signal.createAsync({ parallel: true });
 			Signal.on(test, a);
 			Signal.on(test, b);
-			Signal.on(test, c);
 
-			const pending = assert.rejects(test, e => e === error);
-			await clock.tickAsync(100);
+			const pending = assert.rejects(test, e => e === firstError);
+			await clock.runAllAsync();
 			await pending;
 
-			// handlers must always receive a reject handler
-			assert(cThen.calledOnceWith(
-				sinon.match.func,
-				sinon.match.func
-			));
+			assert(onUnhandledRejection.notCalled);
 		});
 	});
 });

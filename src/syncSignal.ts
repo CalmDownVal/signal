@@ -1,32 +1,21 @@
-import type { Handlers, SyncSignal, SyncSignalOptions } from './types';
+import { createBackend } from './backend';
+import type { SyncSignal, SyncSignalOptions } from './types';
 
-export function createSync<T = void>(_options?: SyncSignalOptions): SyncSignal<T> {
-	let isUsingList = false;
-
+export function createSync<T = void>(options?: SyncSignalOptions): SyncSignal<T> {
+	const backend = createBackend<T>(options?.backend);
 	const signal = function (this: any, event?: T) {
-		isUsingList = true;
 		try {
-			const { handlers } = signal;
-			const { length } = handlers;
+			const snapshot = backend.beginRead();
+			const { length } = snapshot;
 			for (let i = 0; i < length; ++i) {
-				void handlers[i].call(this, event!);
+				void snapshot[i].call(this, event!);
 			}
 		}
 		finally {
-			isUsingList = false;
+			backend.endRead();
 		}
 	};
 
-	signal.handlers = [] as Handlers<T>;
-	signal.lock = (handlers?: Handlers<T>) => {
-		if (isUsingList) {
-			signal.handlers = handlers ?? signal.handlers.slice();
-			isUsingList = false;
-		}
-		else if (handlers) {
-			signal.handlers = handlers;
-		}
-	};
-
+	signal.backend = backend;
 	return signal;
 }

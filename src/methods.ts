@@ -9,7 +9,7 @@ import type {
 	SignalOptions,
 	SyncSignal,
 	SyncSignalOptions,
-	WrappedHandler
+	WrappedSignalHandler
 } from './types';
 
 export function create<T = void>(options?: SyncSignalOptions): SyncSignal<T>;
@@ -17,68 +17,34 @@ export function create<T = void>(options?: AsyncSignalOptions): AsyncSignal<T>;
 export function create<T = void>(options?: SignalOptions): Signal<T> {
 	return options?.async
 		? createAsync(options)
-		: createSync();
+		: createSync(options as SyncSignalOptions | undefined);
 }
 
 export function off<T>(signal: Signal<T>, handler?: SignalHandler<T>): boolean {
-	const oldHandlers = signal.handlers;
-	const { length } = oldHandlers;
-
-	if (length === 0) {
-		return false;
-	}
-
-	if (handler === undefined) {
-		signal.lock([]);
-		return true;
-	}
-
-	let searchIndex = length - 1;
-	while (searchIndex >= 0) {
-		const current = oldHandlers[searchIndex];
-		if (current === handler || current.inner === handler) {
-			break;
-		}
-
-		--searchIndex;
-	}
-
-	if (searchIndex === -1) {
-		return false;
-	}
-
-	const newHandlers = new Array<WrappedHandler<T>>(length - 1);
-
-	let oldIndex = 0;
-	let newIndex = 0;
-	while (oldIndex < length) {
-		if (oldIndex !== searchIndex) {
-			newHandlers[newIndex] = oldHandlers[oldIndex];
-			++newIndex;
-		}
-
-		++oldIndex;
-	}
-
-	signal.lock(newHandlers);
-	return true;
+	return handler
+		? signal.backend.remove(handler)
+		: signal.backend.removeAll();
 }
 
 export function on<T>(signal: Signal<T>, handler: SignalHandler<T>, options?: SignalHandlerOptions): void {
-	let callback: WrappedHandler<T> = handler;
+	let wrapped: WrappedSignalHandler<T> = handler;
 	if (options?.once) {
-		callback = function (this: any, event?: T) {
-			off(signal, handler);
-			return handler.call(this, event!);
+		wrapped = function (this: any, event?: T) {
+			try {
+				return handler.call(this, event!);
+			}
+			finally {
+				if (wrapped.$skipRemove !== true) {
+					off(signal, handler);
+				}
+			}
 		};
 
 		// mutation here is okay
-		(callback as any).inner = handler;
+		wrapped.$originalSignalHandler = handler;
 	}
 
-	// mutation here is okay, too
-	signal.lock();
-	(signal.handlers as any[]).push(callback);
+	signal.backend.add(wrapped);
 }
 
 export function once<T>(signal: Signal<T>, handler: SignalHandler<T>): void {
