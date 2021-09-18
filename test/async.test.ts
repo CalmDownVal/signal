@@ -51,7 +51,7 @@ describe('Asynchronous signals', () => {
 			Signal.on(test, b);
 			Signal.on(test, c);
 
-			const pending = assert.rejects(test, e => e === error);
+			const pending = assert.rejects(test, ex => ex === error);
 			await clock.runAllAsync();
 			await pending;
 
@@ -98,7 +98,7 @@ describe('Asynchronous signals', () => {
 			Signal.on(test, a);
 			Signal.on(test, b);
 
-			const pending = assert.rejects(test, e => e === firstError);
+			const pending = assert.rejects(test, ex => ex === firstError);
 			await clock.runAllAsync();
 			await pending;
 

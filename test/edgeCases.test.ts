@@ -38,4 +38,29 @@ withBackend('Edge cases', backend => {
 
 		assert(handler.calledTwice);
 	});
+
+	it('two intertwined invocations must correctly handle list mutations', () => {
+		const test = Signal.create<boolean>({ backend });
+
+		const handlerTwo = sinon.fake();
+		const handlerOne = sinon.fake((retrigger: boolean) => {
+			if (retrigger) {
+				// trigger the signal a second time within the first invocation
+				test(false);
+			}
+
+			// The second invocation has finished now, but the first is still
+			// halfway. If we remove the second handler now, it must not affect
+			// the first invocation's handler list, i.e. he second handler must
+			// still be called.
+			Signal.off(test, handlerTwo);
+		});
+
+		Signal.on(test, handlerOne);
+		Signal.on(test, handlerTwo);
+		test(true);
+
+		assert(handlerOne.calledTwice);
+		assert(handlerTwo.calledTwice);
+	});
 });

@@ -5,7 +5,7 @@ import sinon from 'sinon';
 import * as Signal from '..';
 
 describe('Signal invocation', () => {
-	it('should forward arguments', () => {
+	it('should forward the event argument', () => {
 		const handler = sinon.fake();
 		const test = Signal.create<any>();
 
