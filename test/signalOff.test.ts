@@ -39,32 +39,32 @@ withBackend('Signal.off()', backend => {
 
 	describe('Handler list manipulation', () => {
 		it('should not trigger handlers after de-registration', () => {
-			const handler0 = sinon.fake();
-			const handler1 = sinon.fake();
+			const first = sinon.fake();
+			const second = sinon.fake();
 			const test = Signal.create({ backend });
 
-			Signal.on(test, handler0);
-			Signal.on(test, handler1);
-			Signal.off(test, handler0);
+			Signal.on(test, first);
+			Signal.on(test, second);
+			Signal.off(test, first);
 			test();
 
-			assert(handler0.notCalled);
-			assert(handler1.calledOnce);
+			assert(first.notCalled);
+			assert(second.calledOnce);
 		});
 
 		it('should remove all handlers', () => {
-			const handler0 = sinon.fake();
-			const handler1 = sinon.fake();
+			const first = sinon.fake();
+			const second = sinon.fake();
 			const test = Signal.create({ backend });
 
-			Signal.on(test, handler0);
-			Signal.on(test, handler1);
+			Signal.on(test, first);
+			Signal.on(test, second);
 
 			Signal.off(test);
 			test();
 
-			assert(handler0.notCalled);
-			assert(handler1.notCalled);
+			assert(first.notCalled);
+			assert(second.notCalled);
 		});
 	});
 });

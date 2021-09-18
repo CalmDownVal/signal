@@ -9,21 +9,21 @@ withBackend('Edge cases', backend => {
 	it('should not affect current invocation when the handler list is changed from within a handler', () => {
 		const test = Signal.create({ backend });
 
-		const handlerTwo = sinon.fake();
-		const handlerOne = sinon.fake(() => {
-			Signal.off(test, handlerTwo);
+		const second = sinon.fake();
+		const first = sinon.fake(() => {
+			Signal.off(test, second);
 		});
 
-		Signal.on(test, handlerOne);
-		Signal.on(test, handlerTwo);
+		Signal.on(test, first);
+		Signal.on(test, second);
 
 		test();
-		assert(handlerOne.calledOnce);
-		assert(handlerTwo.calledOnce);
+		assert(first.calledOnce);
+		assert(second.calledOnce);
 
 		test();
-		assert(handlerOne.calledTwice);
-		assert(handlerTwo.calledOnce);
+		assert(first.calledTwice);
+		assert(second.calledOnce);
 	});
 
 	it('should replace `once` handlers even when re-subscribed *within* a handler itself', () => {
@@ -42,8 +42,8 @@ withBackend('Edge cases', backend => {
 	it('two intertwined invocations must correctly handle list mutations', () => {
 		const test = Signal.create<boolean>({ backend });
 
-		const handlerTwo = sinon.fake();
-		const handlerOne = sinon.fake((retrigger: boolean) => {
+		const second = sinon.fake();
+		const first = sinon.fake((retrigger: boolean) => {
 			if (retrigger) {
 				// trigger the signal a second time within the first invocation
 				test(false);
@@ -53,14 +53,14 @@ withBackend('Edge cases', backend => {
 			// halfway. If we remove the second handler now, it must not affect
 			// the first invocation's handler list, i.e. he second handler must
 			// still be called.
-			Signal.off(test, handlerTwo);
+			Signal.off(test, second);
 		});
 
-		Signal.on(test, handlerOne);
-		Signal.on(test, handlerTwo);
+		Signal.on(test, first);
+		Signal.on(test, second);
 		test(true);
 
-		assert(handlerOne.calledTwice);
-		assert(handlerTwo.calledTwice);
+		assert(first.calledTwice);
+		assert(second.calledTwice);
 	});
 });

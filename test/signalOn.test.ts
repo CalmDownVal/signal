@@ -62,7 +62,7 @@ withBackend('Signal.on(), Signal.once()', backend => {
 		assert.throws(test, ex => ex === error);
 		assert(handler.calledOnce);
 
-		// the handler should be removed by now, test() shouldn't throw
+		// the handler should be removed by now, test() mustn't throw
 		test();
 		assert(handler.calledOnce);
 	});

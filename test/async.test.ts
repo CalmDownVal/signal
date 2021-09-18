@@ -19,19 +19,19 @@ const delay = <T>(fn: () => T, ms: number) => sinon.spy(() => new Promise<T>((re
 describe('Asynchronous signals', () => {
 	describe('Serial strategy', () => {
 		it('should invoke handlers one at a time', async () => {
-			const a = delay(() => 1, 100);
-			const b = delay(() => 2, 100);
+			const first = delay(() => 1, 100);
+			const second = delay(() => 2, 100);
 
 			const test = Signal.createAsync();
-			Signal.on(test, a);
-			Signal.on(test, b);
+			Signal.on(test, first);
+			Signal.on(test, second);
 
 			const pending = test();
-			assert(a.calledOnce);
-			assert(b.notCalled);
+			assert(first.calledOnce);
+			assert(second.notCalled);
 
 			await clock.nextAsync();
-			assert(b.calledOnce);
+			assert(second.calledOnce);
 
 			await clock.nextAsync();
 			await pending;
@@ -40,40 +40,40 @@ describe('Asynchronous signals', () => {
 		it('should immediately propagate a rejection', async () => {
 			const error = new Error();
 
-			const a = delay(() => 1, 100);
-			const b = delay(() => {
+			const first = delay(() => 1, 100);
+			const third = delay(() => 3, 100);
+			const second = delay(() => {
 				throw error;
 			}, 100);
-			const c = delay(() => 3, 100);
 
 			const test = Signal.createAsync();
-			Signal.on(test, a);
-			Signal.on(test, b);
-			Signal.on(test, c);
+			Signal.on(test, first);
+			Signal.on(test, second);
+			Signal.on(test, third);
 
 			const pending = assert.rejects(test, ex => ex === error);
 			await clock.runAllAsync();
 			await pending;
 
 			// since b rejects, c should not get called
-			assert(a.calledOnce);
-			assert(b.calledOnce);
-			assert(c.notCalled);
+			assert(first.calledOnce);
+			assert(second.calledOnce);
+			assert(third.notCalled);
 		});
 	});
 
 	describe('Parallel strategy', () => {
 		it('should invoke handlers all at once', async () => {
-			const a = delay(() => 1, 100);
-			const b = delay(() => 2, 100);
+			const first = delay(() => 1, 100);
+			const second = delay(() => 2, 100);
 
 			const test = Signal.createAsync({ parallel: true });
-			Signal.on(test, a);
-			Signal.on(test, b);
+			Signal.on(test, first);
+			Signal.on(test, second);
 
 			const pending = test();
-			assert(a.calledOnce);
-			assert(b.calledOnce);
+			assert(first.calledOnce);
+			assert(second.calledOnce);
 
 			await clock.runAllAsync();
 			await pending;
@@ -83,11 +83,11 @@ describe('Asynchronous signals', () => {
 			const firstError = new Error();
 			const secondError = new Error();
 
-			const a = delay(() => {
+			const first = delay(() => {
 				throw firstError;
 			}, 100);
 
-			const b = delay(() => {
+			const second = delay(() => {
 				throw secondError;
 			}, 200);
 
@@ -95,13 +95,14 @@ describe('Asynchronous signals', () => {
 			process.addListener('unhandledRejection', onUnhandledRejection);
 
 			const test = Signal.createAsync({ parallel: true });
-			Signal.on(test, a);
-			Signal.on(test, b);
+			Signal.on(test, first);
+			Signal.on(test, second);
 
 			const pending = assert.rejects(test, ex => ex === firstError);
 			await clock.runAllAsync();
 			await pending;
 
+			process.removeListener('unhandledRejection', onUnhandledRejection);
 			assert(onUnhandledRejection.notCalled);
 		});
 	});
