@@ -20,8 +20,7 @@ export interface SignalBackend<T> {
 	add(handler: WrappedSignalHandler<T>): void;
 	remove(handler: SignalHandler<T>): boolean;
 	removeAll(): boolean;
-	beginRead(): Handlers<T>;
-	endRead(): void;
+	snapshot(): Handlers<T>;
 }
 
 export type SignalBackendType = 'array' | 'es6map';

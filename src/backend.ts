@@ -6,7 +6,6 @@ function shouldReplace<T>(prev: WrappedSignalHandler<T>, next: WrappedSignalHand
 
 function createArrayBackend<T>(): SignalBackend<T> {
 	let collection: WrappedSignalHandler<T>[] = [];
-	let isUsed = false;
 
 	const indexOf = (handler: WrappedSignalHandler<T>) => {
 		const key = handler.$originalSignalHandler ?? handler;
@@ -27,21 +26,12 @@ function createArrayBackend<T>(): SignalBackend<T> {
 		return searchIndex;
 	};
 
-	const willMutate = () => {
-		if (isUsed) {
-			collection = collection.slice();
-			isUsed = false;
-		}
-	};
-
 	return {
 		add(handler) {
 			const index = indexOf(handler);
 			if (index !== -1) {
 				const current = collection[index];
 				if (shouldReplace(current, handler)) {
-					// We don't consider this a mutation as it's the same
-					// handler just changing from 'once' to regular.
 					collection[index] = handler;
 					current.$skipRemove = true;
 				}
@@ -49,7 +39,6 @@ function createArrayBackend<T>(): SignalBackend<T> {
 				return;
 			}
 
-			willMutate();
 			collection.push(handler);
 		},
 		remove(handler) {
@@ -58,9 +47,7 @@ function createArrayBackend<T>(): SignalBackend<T> {
 				return false;
 			}
 
-			willMutate();
 			collection.splice(index, 1);
-
 			return true;
 		},
 		removeAll() {
@@ -69,16 +56,10 @@ function createArrayBackend<T>(): SignalBackend<T> {
 			}
 
 			collection = [];
-			isUsed = false;
-
 			return true;
 		},
-		beginRead() {
-			isUsed = true;
-			return collection;
-		},
-		endRead() {
-			isUsed = false;
+		snapshot() {
+			return collection.slice();
 		}
 	};
 }
@@ -112,11 +93,8 @@ function createMapBackend<T>(): SignalBackend<T> {
 		remove(handler) {
 			return collection.delete(handler);
 		},
-		beginRead() {
+		snapshot() {
 			return Array.from(collection.values());
-		},
-		endRead() {
-			// no-op
 		}
 	};
 }

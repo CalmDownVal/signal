@@ -54,9 +54,7 @@ export function createAsync<T = void>(options?: AsyncSignalOptions): AsyncSignal
 	const run = options?.parallel ? runInParallel : runInSeries;
 
 	const signal = function (this: any, event?: T) {
-		return run(this, backend.beginRead(), event!).finally(() => {
-			backend.endRead();
-		});
+		return run(this, backend.snapshot(), event!);
 	};
 
 	signal.backend = backend;

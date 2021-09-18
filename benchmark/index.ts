@@ -43,6 +43,21 @@ function runSuite<T>(
 	);
 
 	await runSuite(
+		`trigger a signal with ${n} handlers`,
+		backend => {
+			const signal = Signal.create({ backend });
+			for (let i = 0; i < n; ++i) {
+				Signal.on(signal, () => {});
+			}
+
+			return signal;
+		},
+		signal => {
+			signal();
+		}
+	);
+
+	await runSuite(
 		`add ${n} handlers, then clear`,
 		backend => Signal.create({ backend }),
 		signal => {
@@ -66,21 +81,6 @@ function runSuite<T>(
 		},
 		signal => {
 			Signal.off(signal, () => {});
-		}
-	);
-
-	await runSuite(
-		`trigger a signal with ${n} handlers`,
-		backend => {
-			const signal = Signal.create({ backend });
-			for (let i = 0; i < n; ++i) {
-				Signal.on(signal, () => {});
-			}
-
-			return signal;
-		},
-		signal => {
-			signal();
 		}
 	);
 })(1000);

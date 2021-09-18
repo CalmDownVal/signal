@@ -37,7 +37,7 @@ yarn add @calmdownval/signal
 - ✅ supports async handlers with serial and parallel invocation strategies
 - ✅ does not rely on class inheritance or mixins
 - ✅ written and compatible with TypeScript
-- ✅ tiny, without any dependencies (~2 kB)
+- ✅ tiny, without any dependencies (<2 kB)
 - ✅ smoothly integrates with standard event emitters
 - ✅ does not rely on event name strings, which are harder to use with
   autocompletion or type-checking and can be a source of silly bugs due to typos
@@ -312,20 +312,20 @@ them.
 
 ```diff
  create a signal instance
-+  array   1,500,364,906 ops/sec ±0.15% (98 runs sampled)
--  es6map     28,398,882 ops/sec ±2.45% (89 runs sampled)
++  array   1,510,832,549 ops/sec ±0.07% (90 runs sampled)
+-  es6map     29,258,272 ops/sec ±2.43% (92 runs sampled)
  
  trigger a signal with 1000 handlers
-+  array         199,536 ops/sec ±0.41% (92 runs sampled)
--  es6map        152,932 ops/sec ±1.56% (93 runs sampled)
++  array         202,696 ops/sec ±0.06% (98 runs sampled)
+-  es6map        154,100 ops/sec ±1.72% (89 runs sampled)
  
  add 1000 handlers, then clear
--  array           2,446 ops/sec ±0.99% (97 runs sampled)
-+  es6map          9,105 ops/sec ±6.49% (76 runs sampled)
+-  array           2,406 ops/sec ±0.42% (98 runs sampled)
++  es6map          9,055 ops/sec ±5.58% (58 runs sampled)
  
  attempt to remove an unknown handler from a signal with 1000 handlers
--  array       1,706,999 ops/sec ±0.12% (99 runs sampled)
-+  es6map    153,392,090 ops/sec ±1.49% (92 runs sampled)
+-  array       1,687,876 ops/sec ±0.17% (96 runs sampled)
++  es6map    159,076,218 ops/sec ±1.61% (89 runs sampled)
 ```
 
 The above benchmark was generated with NodeJS v16.2.0 (V8 version: 9.0.257.25)
