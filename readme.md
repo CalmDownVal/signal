@@ -323,7 +323,7 @@ offers the best performance for almost all use cases.
 ES6 Map is only available in newer JS environments. Maps should only be
 preferred when dealing with *a lot* of `on` and `off` calls and infrequent
 invocations, as they provide a significant boost in such cases. Otherwise maps
-have have a larger memory footprint, significantly decrease the performance of
+have a larger memory footprint, significantly decrease the performance of
 creating new signal instances and slightly reduce the performance of triggering
 them.
 
