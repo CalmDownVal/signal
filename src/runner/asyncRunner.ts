@@ -1,14 +1,13 @@
-import { createBackend } from './backend';
-import type { AsyncSignal, AsyncSignalOptions, Handlers } from './types';
+import type { AsyncSignalOptions, Handlers, SignalBackend } from '~/types';
 
-function isPromise(obj: any): obj is Promise<any> {
+function isThennable(obj: any): obj is Promise<any> {
 	return obj && typeof obj.then === 'function';
 }
 
 function runInParallel<T>(thisArg: any, handlers: Handlers<T>, event: T) {
 	return new Promise<void>((resolve, reject) => {
 		let pending = 0;
-		const fulfill = () => {
+		const onHandlerResolved = () => {
 			if (--pending === 0) {
 				resolve();
 			}
@@ -17,9 +16,9 @@ function runInParallel<T>(thisArg: any, handlers: Handlers<T>, event: T) {
 		const { length } = handlers;
 		for (let index = 0; index < length; ++index) {
 			const result = handlers[index].call(thisArg, event);
-			if (isPromise(result)) {
+			if (isThennable(result)) {
 				++pending;
-				result.then(fulfill, reject);
+				result.then(onHandlerResolved, reject);
 			}
 		}
 	});
@@ -37,7 +36,7 @@ function runInSeries<T>(thisArg: any, handlers: Handlers<T>, event: T) {
 			}
 
 			const result = handlers[index++].call(thisArg, event);
-			if (isPromise(result)) {
+			if (isThennable(result)) {
 				result.then(next, reject);
 			}
 			else {
@@ -49,14 +48,9 @@ function runInSeries<T>(thisArg: any, handlers: Handlers<T>, event: T) {
 	});
 }
 
-export function createAsync<T = void>(options?: AsyncSignalOptions): AsyncSignal<T> {
-	const backend = createBackend<T>(options?.backend);
+export function createAsyncRunner<T = void>(backend: SignalBackend<T>, options?: AsyncSignalOptions) {
 	const run = options?.parallel ? runInParallel : runInSeries;
-
-	const signal = function (this: any, event?: T) {
+	return function (this: any, event?: T) {
 		return run(this, backend.snapshot(), event!);
 	};
-
-	signal.backend = backend;
-	return signal;
 }

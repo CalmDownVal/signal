@@ -1,10 +1,17 @@
 {
 	"compilerOptions": {
+		"baseUrl": "./src",
 		"lib": [
 			"esnext"
 		],
+		"moduleResolution": "node",
 		"newLine": "lf",
 		"noEmit": true,
+		"paths": {
+			"~/*": [
+				"*"
+			]
+		},
 		"skipLibCheck": true,
 		"strict": true,
 		"stripInternal": true,

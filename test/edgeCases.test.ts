@@ -51,8 +51,8 @@ withBackend('Edge cases', backend => {
 
 			// The second invocation has finished now, but the first is still
 			// halfway. If we remove the second handler now, it must not affect
-			// the first invocation's handler list, i.e. he second handler must
-			// still be called.
+			// the first invocation's handler list, i.e. the second handler must
+			// still get called.
 			Signal.off(test, second);
 		});
 

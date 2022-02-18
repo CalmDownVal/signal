@@ -9,6 +9,7 @@ A lightweight event dispatcher.
   - [Adding Handlers](#adding-handlers)
   - [Removing Handlers](#removing-handlers)
   - [Triggering a Signal](#triggering-a-signal)
+  - [Checking for Handlers](#checking-for-handlers)
   - [Async Signals](#async-signals)
     - [Serial Execution](#serial-execution)
     - [Parallel Execution](#parallel-execution)
@@ -185,6 +186,34 @@ catch (ex) {
 You can add async handlers to synchronous signals, but they will be executed in
 a fire-and-forget fashion. This may be desirable in some cases, but keep in mind
 that *any potential promise rejections will not be handled!*
+
+### Checking for Handlers
+
+To check whether there are any handlers attached to a signal, you can read the
+`hasHandlers` property. This is especially useful when computationally expensive
+operations are needed for event data creation. Checking whether there are any
+handlers beforehand can avoid such operations when they're not necessary.
+
+```ts
+if (mySignal.hasHandlers) {
+  mySignal({
+    value: heavyFn()
+  });
+}
+```
+
+You can also use the utility function `lazy` to trigger a signal. It accepts a
+factory function for event data that gets called only if the signal has any
+handlers attached. The above code could be rewritten to:
+
+```ts
+Signal.lazy(mySignal, () => ({
+  value: heavyFn()
+}));
+```
+
+This utility function recognizes async signals and will return a Promise when
+appropriate.
 
 ### Async Signals
 
