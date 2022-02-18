@@ -412,6 +412,11 @@ equivalent signals on each ancestor.
 
 A list of breaking changes for every major version:
 
+- 3.1.0
+  - Added the `lazy` utility function.
+  - Added the `isAsync` property to signals.
+  - Added the `hasHandlers` property to signals.
+  - Added JSDoc comments.
 - 3.0.0
   - Handlers are now kept as unique refs, i.e. adding the same handler multiple
     times has no effect anymore.
