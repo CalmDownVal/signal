@@ -10,18 +10,21 @@ export function testNewInstanceCreation(runner: Runner) {
 	/* eslint-disable @typescript-eslint/no-unused-vars */
 	let instance: any;
 
-	return runner.benchmark('New Instance Creation', [
-		{
-			name: 'EventEmitter',
-			test() {
-				instance = new EventEmitter();
-			}
-		},
-		...BACKENDS.map(backend => ({
-			name: `Signal (${backend} backend)`,
-			test() {
-				instance = create({ backend });
-			}
-		}))
-	]);
+	return runner.benchmark({
+		title: 'New Instance Creation',
+		testCases: [
+			{
+				name: 'EventEmitter',
+				test() {
+					instance = new EventEmitter();
+				}
+			},
+			...BACKENDS.map(backend => ({
+				name: `Signal (${backend} backend)`,
+				test() {
+					instance = create({ backend });
+				}
+			}))
+		]
+	});
 }

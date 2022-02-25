@@ -1,12 +1,18 @@
 /* eslint-disable import/no-named-as-default-member */
-import Bechmark from 'benchmark';
+import Benchmark from 'benchmark';
 
 import type { Reporter } from './Reporter';
 
-export interface TestCase{
+export interface TestCase {
 	readonly name: string;
 	readonly init?: () => any;
 	readonly test: (initResult?: any) => void;
+}
+
+export interface BenchmarkSetup {
+	readonly title: string;
+	readonly comment?: string;
+	readonly testCases: readonly TestCase[];
 }
 
 export class Runner {
@@ -14,8 +20,8 @@ export class Runner {
 		private readonly reporter: Reporter
 	) {}
 
-	public benchmark(benchmarkTitle: string, testCases: readonly TestCase[]) {
-		const suite = new Bechmark.Suite(benchmarkTitle, {
+	public benchmark(setup: BenchmarkSetup) {
+		const suite = new Benchmark.Suite(setup.title, {
 			initCount: 100,
 
 			// times are in seconds
@@ -24,15 +30,15 @@ export class Runner {
 			maxTime: 10
 		});
 
-		for (const testCase of testCases) {
+		for (const testCase of setup.testCases) {
 			const initResult = testCase.init?.();
 			suite.add(testCase.name, testCase.test.bind(null, initResult));
 		}
 
 		return new Promise<void>(resolve => {
-			this.reporter.onBenchmarkBegin(benchmarkTitle);
+			this.reporter.onBenchmarkBegin(setup.title, setup.comment);
 			suite
-				.on('cycle', (e: any) => {
+				.on('cycle', (e: Benchmark.Event) => {
 					this.reporter.onResult(e.target);
 					global.gc?.();
 				})
