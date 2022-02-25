@@ -6,6 +6,7 @@ A lightweight event dispatcher.
 - [Comparison with EventEmitter](#comparison-with-eventemitter)
 - [Usage Guide](#usage-guide)
   - [Creating a Signal](#creating-a-signal)
+  - [Signal Backend](#signal-backend)
   - [Adding Handlers](#adding-handlers)
   - [Removing Handlers](#removing-handlers)
   - [Triggering a Signal](#triggering-a-signal)
@@ -15,8 +16,6 @@ A lightweight event dispatcher.
     - [Parallel Execution](#parallel-execution)
   - [Forwarding this](#forwarding-this)
   - [Wrapping an EventEmitter](#wrapping-an-eventemitter)
-  - [Signal Backend](#signal-backend)
-  - [Event Bubbling](#event-bubbling)
 - [Changelog](#changelog)
 
 ## Installation
@@ -32,21 +31,20 @@ npm install @calmdownval/signal
 yarn add @calmdownval/signal
 ```
 
-## Comparison with EventEmitter
+## Why Signal?
 
-### Pros
+Signal is a somwehat niche alternative to the usual EventEmitter (Node) /
+EventTarget (DOM) APIs. It looks and feels quite different and may involve a
+slight learning curve, but here's why it may all be worth it:
 
-- ✅ supports async handlers and both serial or parallel invocation
-- ✅ written and compatible with TypeScript
-- ✅ tiny, without any dependencies (<2 kB)
+- ✅ supports async handlers with serial or parallel invocation
+- ✅ better equipped for high-performance applications
+- ✅ tiny (~2.3 kB) and without any dependencies
 - ✅ does not rely on class inheritance or mixins
-- ✅ smoothly integrates with standard event emitters
+- ✅ comes bundled with TypeScript typings
+- ✅ smoothly integrates with standard event emitter APIs
 - ✅ does not rely on event name strings, which are harder to use with
   autocompletion or type-checking and can be a source of silly bugs due to typos
-
-### Cons
-
-- ❌ is non-standard and will involve some learning curve
 
 ## Usage Guide
 
@@ -68,12 +66,13 @@ object with the following properties:
 - `parallel: boolean = false`  
   controls whether asynchronous handlers will run in parallel or in series, only
   has effect if async is set to true
-- `backend: 'array' | 'es6map' = 'array'`  
+- `backend: 'array' | 'set' = 'array'`  
   controls which data structure is used to hold the handler collection, see the
   [Signal Backend](#signal-backend) section for more information
 
-Internally this function only checks the async option and delegates execution
-to either `Signal.createSync` or `Signal.createAsync`.
+There are also two utility functions `Signal.createSync` and
+`Signal.createAsync` which enforce the `async` option to true and false,
+respectively.
 
 ```ts
 // will invoke handlers synchronously in series
@@ -91,9 +90,26 @@ const asyncSignal4 = Signal.create({
   parallel: true
 });
 
-// will use ES6 Map to hold its list of handlers
-const mapSignal = Signal.createSync({ backend: 'es6map' });
+// will use an ES6 Set to hold its list of handlers
+const uniqueSignal = Signal.createSync({ backend: 'set' });
 ```
+
+### Signal Backend
+
+Signals currently offer the choice between arrays and ES6 sets as the backing
+data structure holding the collection of registered handlers. The key difference
+is that sets only store unique handlers whereas arrays allow the same handler
+to be added multiple times.
+
+Array is the default backend as it is supported in every environment and offers
+the best overall performance for almost all use cases.
+
+Sets have a larger memory footprint and decrease the speed of creating new
+Signal instances. Generally sets should be preferred when you want to enforce
+unique handlers or when optimizing for *a lot* of `on` and `off` calls.
+
+For a more in-depth performance analysis see
+[latest benchmark results](./packages/signal-benchmark/benchmark-results.md).
 
 ### Adding Handlers
 
@@ -114,28 +130,6 @@ Signal.on(mySignal, myHandler, { once: true });
 // shorter version using the .once util
 Signal.once(mySignal, myHandler);
 ```
-
-When a handler is first added with the `once` flag set and later added again
-normally, assuming the signal wasn't triggered between these operation, the
-`once` flag will be unset.
-
-```ts
-const mySignal = Signal.create();
-const onTrigger = () => console.log('bar');
-
-Signal.once(mySignal, onTrigger);
-Signal.on(mySignal, onTrigger);
-
-// will print 'bar'
-mySignal();
-
-// will print 'bar' again
-mySignal();
-```
-
-Without involving the `once` flag, calling `on` multiple times with the same
-handler has no effect. Handlers are kept in a set (i.e. there are never any
-duplicates in the handler list).
 
 ### Removing Handlers
 
@@ -189,22 +183,13 @@ that *any potential promise rejections will not be handled!*
 
 ### Checking for Handlers
 
-To check whether there are any handlers attached to a signal, you can read the
-`hasHandlers` property. This is especially useful when computationally expensive
-operations are needed for event data creation. Checking whether there are any
-handlers beforehand can avoid such operations when they're not necessary.
+When computationally expensive operations are needed for event data creation,
+it may be worth checking whether there are any handlers beforehand to avoid such
+operations when they're not necessary.
 
-```ts
-if (mySignal.hasHandlers) {
-  mySignal({
-    value: heavyFn()
-  });
-}
-```
-
-You can also use the utility function `lazy` to trigger a signal. It accepts a
-factory function for event data that gets called only if the signal has any
-handlers attached. The above code could be rewritten to:
+For this task, Signal provides the `lazy` utility function. It accepts a signal
+instance and a factory callback to create event data. This callback will only be
+invoked if the signal has any handlers.
 
 ```ts
 Signal.lazy(mySignal, () => ({
@@ -212,8 +197,8 @@ Signal.lazy(mySignal, () => ({
 }));
 ```
 
-This utility function recognizes async signals and will return a Promise when
-appropriate.
+The `lazy` function recognizes async signals and will return a Promise whenever
+async signal is given (even if it has no handlers and no invocation occurs).
 
 ### Async Signals
 
@@ -264,13 +249,14 @@ Signal.on(mySignal, () => sleep(100));
 await mySignal();
 ```
 
-Note that if a handler rejects other handlers continue their execution and there
-is no way to await them. If additional rejections occur, they will be suppressed
-as the wrapping promise was already rejected with the first error.
+Keep in mind that if a handler rejects, other handlers continue their execution
+and there is no way to await them anymore. Should any additional rejections
+occur, they will be squelched to avoid unhandled rejections.
 
-It is a good practice to either make sure none of the handlers ever reject or
-to pass an abort signal through the event object so that you have some control
-over the still-pending actions if a rejection occurs, e.g.:
+With parallel execution, it is a good practice to either make sure none of the
+handlers ever reject or to pass an abort signal through the event object so that
+you retain some control over the still-pending actions in case a rejection
+occurs, e.g.:
 
 ```ts
 const abort = Signal.createSync();
@@ -283,18 +269,19 @@ catch (ex) {
 }
 ```
 
-Note that the above example has nothing to do with browser `AbortController` or
-`AbortSignal`. However, you could use those for the same purpose too!
+Note that the above example has nothing to do with the `AbortController` and
+`AbortSignal` browser APIs. However, you could use those for the same purpose,
+too!
 
 ### Forwarding this
 
-Signals forward `this` to all its handlers, however there are several caveats to
-keep in mind when using this feature. These stem from how JavaScript functions
-and the binding of `this` work.
+Signals forward `this` to all its handlers, however there are a few caveats to
+using this feature. These stem from how JavaScript functions and the binding of
+`this` work.
 
-Any handler that needs to use the forwarded `this` has to be a regular function,
-not an arrow function. Signals also need to be called on the object that should
-be forwarded:
+Any handler that relies on forwarded `this` has to be a regular function, not an
+arrow function. Signals also need to be contained within the object that you
+wish to forward as `this`.
 
 ```ts
 const obj = {
@@ -310,8 +297,9 @@ Signal.on(obj.mySignal, function () {
 obj.mySignal();
 ```
 
-When signals are not called on an object, it is necessary to trigger them using
-the `.call` method to pass through `this` correctly:
+When signals are not contained within an object (or you need to forward a
+different object), it is necessary to trigger using the `.call` method and
+manually pass the desired reference:
 
 ```ts
 const obj = { value: 'bar' };
@@ -341,86 +329,24 @@ button.addEventListener('click', confirmed);
 Now every time the button is clicked the `confirmed` signal will trigger
 forwarding the `MouseEvent` object as well as `this` to all its handlers.
 
-### Signal Backend
-
-Signals offer the choice between arrays and ES6 Maps as the backing data
-structure holding the list of registered handlers.
-
-Array is the default structure as it is supported in every environment and
-offers the best performance for almost all use cases.
-
-ES6 Map is only available in newer JS environments. Maps should only be
-preferred when dealing with *a lot* of `on` and `off` calls and infrequent
-invocations, as they provide a significant boost in such cases. Otherwise maps
-have a larger memory footprint, significantly decrease the performance of
-creating new signal instances and slightly reduce the performance of triggering
-them.
-
-```diff
- create a signal instance
-+  array   1,510,832,549 ops/sec ±0.07% (90 runs sampled)
--  es6map     29,258,272 ops/sec ±2.43% (92 runs sampled)
- 
- trigger a signal with 1000 handlers
-+  array         202,696 ops/sec ±0.06% (98 runs sampled)
--  es6map        154,100 ops/sec ±1.72% (89 runs sampled)
- 
- add 1000 handlers, then clear
--  array           2,406 ops/sec ±0.42% (98 runs sampled)
-+  es6map          9,055 ops/sec ±5.58% (58 runs sampled)
- 
- attempt to remove an unknown handler from a signal with 1000 handlers
--  array       1,687,876 ops/sec ±0.17% (96 runs sampled)
-+  es6map    159,076,218 ops/sec ±1.61% (89 runs sampled)
-```
-
-The above benchmark was generated with NodeJS v16.2.0 (V8 version: 9.0.257.25)
-on an AMD Ryzen 9 5950X CPU. You can run it on your machine using
-`yarn benchmark`.
-
-### Event Bubbling
-
-Event bubbling is not implemented within the signal library, however it can be
-achieved with a helper function, e.g.:
-
-```ts
-import type { Signal, SignalArgs } from '@calmdownval/signal';
-
-type BubbleTarget<T, TSignal extends string> =
-  & { [K in TSignal]?: Signal<T> | null }
-  & { parent?: BubbleTarget<T, TSignal> | null };
-
-export async function bubble<T, TSignal extends string>(
-  target: BubbleTarget<T, TSignal>,
-  signal: TSignal,
-  ...args: SignalArgs<T>
-) {
-  let current: BubbleTarget<T, TSignal> | null | undefined = target;
-  do {
-    await current[signal]?.(...args);
-    current = current.parent;
-  }
-  while (current);
-}
-```
-
-Calling `bubble(obj, 'someEvent', event)` will trigger the `'someEvent'` signal
-with the `event` argument and then traverse upwards through parents triggering
-equivalent signals on each ancestor.
-
 ## Changelog
 
 A list of breaking changes for every major version:
 
+- 4.0.0
+  - Changed `es6map` backend to `set`.
+  - Removed `hasHandlers` getter, use `lazy` instead.
+  - Improved performance and unit test coverage.
 - 3.1.0
   - Added the `lazy` utility function.
   - Added the `isAsync` property to signals.
   - Added the `hasHandlers` property to signals.
   - Added JSDoc comments.
 - 3.0.0
-  - Handlers are now kept as unique refs, i.e. adding the same handler multiple
-    times has no effect anymore.
+  - Added the option to choose between backends.
   - Renamed type `Handler` to `SignalHandler`.
   - Renamed type `HandlerOptions` to `SignalHandlerOptions`.
 - 2.0.0
   - Signals now only pass the first argument to handlers.
+- 1.0.0
+  - Initial implementation.

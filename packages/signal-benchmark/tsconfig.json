@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"baseUrl": "./src",
+		"esModuleInterop": true,
+		"lib": [
+			"esnext",
+		],
+		"module": "esnext",
+		"moduleResolution": "node",
+		"newLine": "lf",
+		"noEmit": true,
+		"paths": {
+			"~/*": [
+				"*"
+			]
+		},
+		"skipLibCheck": true,
+		"strict": true,
+		"types": [
+			"node"
+		],
+		"target": "esnext"
+	},
+	"include": [
+		"./src/**/*"
+	]
+}

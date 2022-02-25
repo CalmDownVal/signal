@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"allowJs": true,
+		"baseUrl": "./src",
+		"lib": [
+			"esnext"
+		],
+		"module": "esnext",
+		"moduleResolution": "node",
+		"newLine": "lf",
+		"noEmit": true,
+		"outDir": "./build",
+		"paths": {
+			"~/*": [
+				"*"
+			]
+		},
+		"skipLibCheck": true,
+		"strict": true,
+		"stripInternal": true,
+		"types": [],
+		"target": "esnext"
+	},
+	"include": [
+		"./src/**/*"
+	]
+}
