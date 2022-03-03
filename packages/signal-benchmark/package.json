@@ -15,9 +15,7 @@
 		"benchmark": "2.1.4",
 		"rollup": "2.67.2",
 		"rollup-plugin-delete": "2.0.0",
-		"rollup-plugin-dts": "4.1.0",
 		"rollup-plugin-node-externals": "4.0.0",
-		"rollup-plugin-terser": "7.0.2",
 		"typescript": "4.5.5",
 		"tslib": "2.3.1"
 	}
