@@ -1,7 +1,7 @@
 {
 	"name": "@calmdownval/signal",
 	"description": "A lightweight event dispatcher with async handler support.",
-	"version": "4.0.1",
+	"version": "4.0.2",
 	"license": "ISC",
 	"main": "./build/index.cjs.min.js",
 	"module": "./build/index.esm.min.mjs",
@@ -13,6 +13,7 @@
 			"types": "./build/index.d.ts"
 		}
 	},
+	"homepage": "https://github.com/CalmDownVal/signal/tree/master/packages/signal",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/CalmDownVal/signal.git"

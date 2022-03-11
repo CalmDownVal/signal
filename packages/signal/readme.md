@@ -70,28 +70,21 @@ object with the following properties:
   controls which data structure is used to hold the handler collection, see the
   [Signal Backend](#signal-backend) section for more information
 
-There are also two utility functions `Signal.createSync` and
-`Signal.createAsync` which enforce the `async` option to true and false,
-respectively.
-
 ```ts
 // will invoke handlers synchronously in series
-const syncSignal1 = Signal.createSync();
-const syncSignal2 = Signal.create();
+const syncSignal = Signal.create();
 
 // will invoke handlers asynchronously, in series, one at a time
-const asyncSignal1 = Signal.createAsync();
-const asyncSignal2 = Signal.create({ async: true });
+const serialAsyncSignal = Signal.create({ async: true });
 
 // will invoke handlers asynchronously, all at once, in parallel
-const asyncSignal3 = Signal.createAsync({ parallel: true });
-const asyncSignal4 = Signal.create({
+const parallelAsyncSignal = Signal.create({
   async: true,
   parallel: true
 });
 
 // will use an ES6 Set to hold its list of handlers
-const uniqueSignal = Signal.createSync({ backend: 'set' });
+const uniqueHandlerSignal = Signal.create({ backend: 'set' });
 ```
 
 ### Signal Backend
@@ -109,7 +102,7 @@ Signal instances. Generally sets should be preferred when you want to enforce
 unique handlers or when optimizing for *a lot* of `on` and `off` calls.
 
 For a more in-depth performance analysis see
-[latest benchmark results](./packages/signal-benchmark/benchmark-results.md).
+[latest benchmark results](../signal-benchmark/benchmark-results.md).
 
 ### Adding Handlers
 
@@ -223,7 +216,7 @@ A promise rejection will immediately propagate upwards and terminate the
 execution. Handlers further down the list will not execute in such case.
 
 ```ts
-const mySignal = Signal.createAsync();
+const mySignal = Signal.create({ async: true });
 
 Signal.on(mySignal, () => sleep(100));
 Signal.on(mySignal, () => sleep(100));
@@ -240,7 +233,10 @@ the signal will immediately reject as well. This is similar to the behavior of
 `Promise.all`.
 
 ```ts
-const mySignal = Signal.createAsync({ parallel: true });
+const mySignal = Signal.create({
+  async: true,
+  parallel: true
+});
 
 Signal.on(mySignal, () => sleep(100));
 Signal.on(mySignal, () => sleep(100));
@@ -259,7 +255,7 @@ you retain some control over the still-pending actions in case a rejection
 occurs, e.g.:
 
 ```ts
-const abort = Signal.createSync();
+const abort = Signal.create();
 try {
   await mySignal({ abort });
 }
@@ -336,6 +332,8 @@ A list of breaking changes for every major version:
 - 4.0.0
   - Changed `es6map` backend to `set`.
   - Removed `hasHandlers` getter, use `lazy` instead.
+  - Removed `createSync` util, use `create` instead.
+  - Removed `createAsync` util, use `create` instead.
   - Improved performance and unit test coverage.
 - 3.1.0
   - Added the `lazy` utility function.
