@@ -39,11 +39,7 @@ export class Stepper {
 			return Promise.reject(new Error('There are no more steps in the queue.'));
 		}
 
-		return new Promise<boolean>(resolve => {
-			// if (!step.resolve) {
-			// 	throw new Error('The callback of the next step has not been invoked.');
-			// }
-
+		return new Promise(resolve => {
 			if (step.resolve && step.reject) {
 				try {
 					step.resolve(step.callback());
@@ -53,7 +49,7 @@ export class Stepper {
 				}
 			}
 
-			process.nextTick(resolve, true);
+			process.nextTick(resolve);
 		});
 	}
 
