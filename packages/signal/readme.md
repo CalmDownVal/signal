@@ -190,8 +190,23 @@ Signal.lazy(mySignal, () => ({
 }));
 ```
 
-The `lazy` function recognizes async signals and will return a Promise whenever
-async signal is given (even if it has no handlers and no invocation occurs).
+A boolean is returned indicating whether the signal (and thus the callback) has
+been triggered. This is useful for fallback behavior, e.g. logging when no
+handlers are attached to an error signal.
+
+```ts
+try {
+  // ...
+}
+catch (ex) {
+  if (!Signal.lazy(errorSignal, () => ex)) {
+    console.error(ex);
+  }
+}
+```
+
+The `lazy` function recognizes async signals and will return a promise in such
+cases.
 
 ### Async Signals
 
@@ -327,8 +342,8 @@ forwarding the `MouseEvent` object as well as `this` to all its handlers.
 
 ## Changelog
 
-A list of breaking changes for every major version:
-
+- 4.1.0
+  - The `lazy` util now returns booleans indicating if the signal was triggered.
 - 4.0.0
   - Changed `es6map` backend to `set`.
   - Removed `hasHandlers` getter, use `lazy` instead.

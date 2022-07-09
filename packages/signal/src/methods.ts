@@ -95,18 +95,23 @@ export function on<T>(signal: Signal<T>, handler: SignalHandler<T>, options?: Si
 
 /**
  * Checks whether a signal has any handlers attached and triggers it providing
- * return value of the `lazyEvent` callback as the event data.
+ * return value of the `lazyEvent` callback as the event data. This is a no-op
+ * when the signal has no handlers attached.
  *
- * This is a no-op if the signal has no handlers attached.
+ * Returns (sync signals) or resolves to (async signals) a boolean indicating
+ * whether the signal was triggered.
  */
-export function lazy<T>(signal: SyncSignal<T>, lazyEvent: () => T): void;
-export function lazy<T>(signal: AsyncSignal<T>, lazyEvent: () => T): Promise<void>;
+export function lazy<T>(signal: SyncSignal<T>, lazyEvent: () => T): boolean;
+export function lazy<T>(signal: AsyncSignal<T>, lazyEvent: () => T): Promise<boolean>;
 export function lazy<T>(this: any, signal: Signal<T>, lazyEvent: () => T) {
 	if (signal.$backend.$count()) {
-		return (signal as any).call(this, lazyEvent());
+		const call = (signal as any).call(this, lazyEvent());
+		return signal.isAsync
+			? (call as Promise<void>).then(() => true)
+			: true;
 	}
 
 	return signal.isAsync
-		? Promise.resolve()
-		: undefined;
+		? Promise.resolve(false)
+		: false;
 }

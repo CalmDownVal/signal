@@ -12,7 +12,7 @@ describe('Signal.lazy()', () => {
 			const returnValue = Signal.lazy(test, factory);
 
 			assert(factory.notCalled);
-			assert.strictEqual(returnValue, undefined);
+			assert.strictEqual(returnValue, false);
 		});
 
 		it('should execute factory callback and trigger the signal when handlers are attached', () => {
@@ -25,7 +25,7 @@ describe('Signal.lazy()', () => {
 
 			assert(factory.calledOnce);
 			assert(handler.calledOnceWith(123));
-			assert.strictEqual(returnValue, undefined);
+			assert.strictEqual(returnValue, true);
 		});
 	});
 
@@ -34,12 +34,13 @@ describe('Signal.lazy()', () => {
 			const test = Signal.create({ async: true });
 			const factory = sinon.fake();
 
-			const returnValue = Signal.lazy(test, factory);
+			const pendingResult = Signal.lazy(test, factory);
 
-			assert(returnValue instanceof Promise);
-			await returnValue;
+			assert(pendingResult instanceof Promise);
+			const returnValue = await pendingResult;
 
 			assert(factory.notCalled);
+			assert.strictEqual(returnValue, false);
 		});
 
 		it('should execute factory callback and trigger the signal when handlers are attached', async () => {
@@ -49,13 +50,14 @@ describe('Signal.lazy()', () => {
 
 			Signal.on(test, handler);
 
-			const returnValue = Signal.lazy(test, factory);
+			const pendingResult = Signal.lazy(test, factory);
 
-			assert(returnValue instanceof Promise);
-			await returnValue;
+			assert(pendingResult instanceof Promise);
+			const returnValue = await pendingResult;
 
 			assert(factory.calledOnce);
 			assert(handler.calledOnceWith(123));
+			assert.strictEqual(returnValue, true);
 		});
 	});
 });
