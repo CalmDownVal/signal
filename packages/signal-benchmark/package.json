@@ -9,14 +9,14 @@
 		"@calmdownval/signal": "*"
 	},
 	"devDependencies": {
-		"@rollup/plugin-typescript": "8.3.0",
+		"@rollup/plugin-typescript": "8.3.3",
 		"@types/benchmark": "2.1.1",
-		"@types/node": "17.0.18",
+		"@types/node": "18.0.3",
 		"benchmark": "2.1.4",
-		"rollup": "2.67.2",
+		"rollup": "2.76.0",
 		"rollup-plugin-delete": "2.0.0",
-		"rollup-plugin-node-externals": "4.0.0",
-		"typescript": "4.5.5",
-		"tslib": "2.3.1"
+		"rollup-plugin-node-externals": "4.1.1",
+		"typescript": "4.7.4",
+		"tslib": "2.4.0"
 	}
 }
