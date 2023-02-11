@@ -124,6 +124,11 @@ Signal.on(mySignal, myHandler, { once: true });
 Signal.once(mySignal, myHandler);
 ```
 
+Another method to add handlers to a signal is the `Signal.subscribe` function.
+It acts exactly the same as `Signal.on` except it additionally returns an
+'unsubscriber' function which is often useful when working with libraries like
+React etc.
+
 ### Removing Handlers
 
 To remove a handler (regardless of the once option), use the `Signal.off`
@@ -342,6 +347,8 @@ forwarding the `MouseEvent` object as well as `this` to all its handlers.
 
 ## Changelog
 
+- 4.2.0
+  - Added the `subscribe` method.
 - 4.1.0
   - The `lazy` util now returns booleans indicating if the signal was triggered.
 - 4.0.0

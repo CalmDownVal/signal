@@ -48,11 +48,18 @@ export function create<T = void>(options: SignalOptions = {}): Signal<T> {
 }
 
 /**
- * Attempts to remove the given handler from a Signal or removes all its
- * handlers if no specific handler is provided.
+ * Removes all handlers from the Signal.
  *
  * Returns a boolean indicating whether any handlers have been removed.
  */
+export function off<T>(signal: Signal<T>): boolean;
+
+/**
+ * Attempts to remove the given handler from the Signal.
+ *
+ * Returns a boolean indicating whether the handler has been removed.
+ */
+export function off<T>(signal: Signal<T>, handler: SignalHandler<T>): boolean;
 export function off<T>(signal: Signal<T>, handler?: SignalHandler<T>): boolean {
 	return handler
 		? signal.$backend.$delete(handler)
@@ -81,8 +88,7 @@ export function once<T>(signal: Signal<T>, handler: SignalHandler<T>): void {
 }
 
 /**
- * Attaches a handler to a Signal. Has no effect if the handler has already been
- * attached to this Signal.
+ * Attaches a handler to a Signal.
  */
 export function on<T>(signal: Signal<T>, handler: SignalHandler<T>, options?: SignalHandlerOptions): void {
 	if (options?.once) {
@@ -91,6 +97,15 @@ export function on<T>(signal: Signal<T>, handler: SignalHandler<T>, options?: Si
 	else {
 		signal.$backend.$add(handler);
 	}
+}
+
+/**
+ * Attaches a handler to a Signal and returns a function that detaches it when
+ * called.
+ */
+export function subscribe<T>(signal: Signal<T>, handler: SignalHandler<T>, options?: SignalHandlerOptions): () => void {
+	on(signal, handler, options);
+	return () => off(signal, handler);
 }
 
 /**
