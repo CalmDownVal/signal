@@ -39,7 +39,7 @@ slight learning curve, but here's why it may all be worth it:
 
 - ✅ supports async handlers with serial or parallel invocation
 - ✅ better equipped for high-performance applications
-- ✅ tiny (~2.3 kB) and without any dependencies
+- ✅ tiny (~2.4 kB) and without any dependencies
 - ✅ does not rely on class inheritance or mixins
 - ✅ comes bundled with TypeScript typings
 - ✅ smoothly integrates with standard event emitter APIs

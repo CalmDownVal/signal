@@ -1,4 +1,5 @@
-import { join } from 'path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import typescript from '@rollup/plugin-typescript';
 import del from 'rollup-plugin-delete';
@@ -22,10 +23,12 @@ const minified = {
 	]
 };
 
+const packageRootDir = dirname(fileURLToPath(import.meta.url));
 function resolve(path) {
-	return join(__dirname, path);
+	return join(packageRootDir, path);
 }
 
+// eslint-disable-next-line import/no-default-export
 export default [
 	{
 		input: resolve('./src/index.ts'),
@@ -54,8 +57,6 @@ export default [
 			file: resolve('./build/index.d.ts'),
 			format: 'es'
 		},
-		plugins: [
-			definitions()
-		]
+		plugins: [ definitions() ]
 	}
 ];
