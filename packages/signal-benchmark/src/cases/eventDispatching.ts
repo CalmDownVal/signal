@@ -1,6 +1,6 @@
-import EventEmitter from 'events';
+import EventEmitter from 'node:events';
 
-import { create, on, SyncSignal } from '@calmdownval/signal';
+import { create, on, type SyncSignal } from '@cdv/signal';
 
 import type { Runner } from '~/Runner';
 import { BACKENDS, repeat } from '~/utils';

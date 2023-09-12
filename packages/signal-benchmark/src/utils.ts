@@ -1,4 +1,4 @@
-import type { SignalBackendType } from '@calmdownval/signal';
+import type { SignalBackendType } from '@cdv/signal';
 
 export const BACKENDS: SignalBackendType[] = [
 	'array',

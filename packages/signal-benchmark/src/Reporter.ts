@@ -1,6 +1,6 @@
-import { createWriteStream, WriteStream } from 'fs';
-import * as OS from 'os';
-import { resolve } from 'path';
+import { createWriteStream, type WriteStream } from 'node:fs';
+import * as OS from 'node:os';
+import { resolve } from 'node:path';
 
 import type { Target } from 'benchmark';
 

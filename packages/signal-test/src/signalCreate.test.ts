@@ -1,6 +1,6 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
-import * as Signal from '@calmdownval/signal';
+import * as Signal from '@cdv/signal';
 
 describe('Signal creation', () => {
 	describe('Signal.create()', () => {

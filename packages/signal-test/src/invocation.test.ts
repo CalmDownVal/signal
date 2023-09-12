@@ -1,7 +1,7 @@
-import assert from 'assert';
-import EventEmitter from 'events';
+import assert from 'node:assert';
+import EventEmitter from 'node:events';
 
-import * as Signal from '@calmdownval/signal';
+import * as Signal from '@cdv/signal';
 import sinon from 'sinon';
 
 describe('Signal invocation', () => {

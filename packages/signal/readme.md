@@ -3,7 +3,7 @@
 A lightweight event dispatcher.
 
 - [Installation](#installation)
-- [Comparison with EventEmitter](#comparison-with-eventemitter)
+- [Why Signal?](#why-signal)
 - [Usage Guide](#usage-guide)
   - [Creating a Signal](#creating-a-signal)
   - [Signal Backend](#signal-backend)
@@ -20,15 +20,16 @@ A lightweight event dispatcher.
 
 ## Installation
 
-You can install this package using NPM or Yarn. It already contains its own
-typings and needs no additional dependencies to use with TypeScript.
+The package is distributed via NPM and can be installed by any compatible
+package manager. It already contains its own typings and needs no additional
+dependencies to work with TypeScript.
 
 ```sh
-# using NPM
-npm install @calmdownval/signal
+# NPM
+npm install @cdv/signal
 
-# using Yarn
-yarn add @calmdownval/signal
+# Yarn
+yarn add @cdv/signal
 ```
 
 ## Why Signal?
@@ -38,21 +39,20 @@ EventTarget (DOM) APIs. It looks and feels quite different and may involve a
 slight learning curve, but here's why it may all be worth it:
 
 - ✅ supports async handlers with serial or parallel invocation
-- ✅ better equipped for high-performance applications
+- ✅ does not rely on event name strings
+- ✅ suitable for high-performance applications
 - ✅ tiny (~2.4 kB) and without any dependencies
 - ✅ does not rely on class inheritance or mixins
 - ✅ comes bundled with TypeScript typings
 - ✅ smoothly integrates with standard event emitter APIs
-- ✅ does not rely on event name strings, which are harder to use with
-  autocompletion or type-checking and can be a source of silly bugs due to typos
 
 ## Usage Guide
 
-The library provides everything as named exports. Usually the best approach for
-good code readability is to import the entire namespace as `Signal`.
+The library provides everything as named exports. Usually the best approach with
+regards to code readability is to import the entire namespace as `Signal`.
 
 ```ts
-import * as Signal from '@calmdownval/signal';
+import * as Signal from '@cdv/signal';
 ```
 
 ### Creating a Signal
@@ -60,15 +60,17 @@ import * as Signal from '@calmdownval/signal';
 To create a signal call the `Signal.create` function. You can pass an options
 object with the following properties:
 
-- `async: boolean = false`  
+- `async: boolean`  
   controls whether the signal should act with respect to promises returned by
-  event handlers
-- `parallel: boolean = false`  
+  event handlers, defaults to `false`
+- `parallel: boolean`  
   controls whether asynchronous handlers will run in parallel or in series, only
-  has effect if async is set to true
-- `backend: 'array' | 'set' = 'array'`  
+  has effect if async is set to true, defaults to `false` (i.e. serial
+  execution)
+- `backend: 'array' | 'set'`  
   controls which data structure is used to hold the handler collection, see the
-  [Signal Backend](#signal-backend) section for more information
+  [Signal Backend](#signal-backend) section for more information, defaults to
+  `'array'`
 
 ```ts
 // will invoke handlers synchronously in series

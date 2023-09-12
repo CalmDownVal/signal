@@ -1,6 +1,6 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
-import * as Signal from '@calmdownval/signal';
+import * as Signal from '@cdv/signal';
 import sinon from 'sinon';
 
 import { Stepper } from './utils/Stepper';

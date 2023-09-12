@@ -1,60 +1,49 @@
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
+import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
-import del from 'rollup-plugin-delete';
+import deleteBeforeBuild from 'rollup-plugin-delete';
 import definitions from 'rollup-plugin-dts';
-import { terser } from 'rollup-plugin-terser';
-
-const minified = {
-	sourcemap: true,
-	plugins: [
-		terser({
-			mangle: {
-				properties: {
-					// mangle all properties with the $ prefix
-					regex: /^\$.*$/
-				}
-			},
-			output: {
-				comments: false
-			}
-		})
-	]
-};
-
-const packageRootDir = dirname(fileURLToPath(import.meta.url));
-function resolve(path) {
-	return join(packageRootDir, path);
-}
 
 // eslint-disable-next-line import/no-default-export
 export default [
 	{
-		input: resolve('./src/index.ts'),
+		input: './src/index.ts',
 		output: [
 			{
-				...minified,
-				file: resolve('./build/index.cjs.min.js'),
-				format: 'cjs'
+				exports: 'named',
+				file: './build/index.cjs.min.js',
+				format: 'cjs',
+				sourcemap: true
 			},
 			{
-				...minified,
-				file: resolve('./build/index.esm.min.mjs'),
-				format: 'esm'
+				exports: 'named',
+				file: './build/index.esm.min.mjs',
+				format: 'esm',
+				sourcemap: true
 			}
 		],
 		plugins: [
-			del({
-				targets: resolve('./build/*')
+			deleteBeforeBuild({
+				runOnce: true,
+				targets: './build/*'
 			}),
-			typescript()
+			typescript(),
+			terser({
+				mangle: {
+					properties: {
+						// force-mangle all properties with the $ prefix
+						regex: /^\$.*$/
+					}
+				},
+				output: {
+					comments: false
+				}
+			})
 		]
 	},
 	{
-		input: resolve('./src/index.ts'),
+		input: './src/index.ts',
 		output: {
-			file: resolve('./build/index.d.ts'),
+			file: './build/index.d.ts',
 			format: 'es'
 		},
 		plugins: [ definitions() ]

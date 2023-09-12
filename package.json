@@ -1,19 +1,20 @@
 {
-	"name": "@calmdownval/signal-monorepo",
+	"name": "@cdv/signal-monorepo",
 	"private": true,
+	"packageManager": "yarn@3.6.3",
 	"workspaces": [
 		"packages/*"
 	],
-	"scripts": {
-		"lint": "eslint --ignore-pattern **/build/* ./packages/**/*.{js,ts}"
-	},
 	"devDependencies": {
-		"@calmdownval/eslint-config": "1.0.1",
-		"@calmdownval/eslint-import-resolver-typescript": "1.1.2",
-		"@typescript-eslint/eslint-plugin": "5.51.0",
-		"@typescript-eslint/parser": "5.51.0",
-		"eslint": "8.34.0",
-		"eslint-plugin-import": "2.27.5",
-		"typescript": "4.9.5"
+		"@calmdownval/eslint-config": "2.0.4",
+		"@calmdownval/eslint-import-resolver": "1.0.0",
+		"@typescript-eslint/eslint-plugin": "6.2.1",
+		"@typescript-eslint/parser": "6.2.1",
+		"eslint": "8.46.0",
+		"eslint-plugin-import": "2.28.0",
+		"typescript": "5.2.2"
+	},
+	"scripts": {
+		"lint": "eslint --ignore-pattern build ./packages/**/*.{js,ts}"
 	}
 }
