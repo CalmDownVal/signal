@@ -1,7 +1,10 @@
 import type { AsyncSignalOptions, SignalBackend, WrappedSignalHandler } from '~/types';
 
-function isThennable(obj: any): obj is Promise<any> {
-	return obj && typeof obj.then === 'function';
+export function createAsyncDispatcher<T = void>(backend: SignalBackend<T>, options?: AsyncSignalOptions) {
+	const run = options?.parallel ? dispatchInParallel : dispatchInSeries;
+	return function (this: any, event?: T) {
+		return run(this, backend.$factory.$getSnapshot(backend), event!);
+	};
 }
 
 function dispatchInParallel<T>(thisArg: any, snapshot: readonly WrappedSignalHandler<T>[], event: T) {
@@ -15,12 +18,15 @@ function dispatchInParallel<T>(thisArg: any, snapshot: readonly WrappedSignalHan
 			}
 		};
 
-		for (let index = 0; index < length; ++index) {
+		let index = 0;
+		while (index < length) {
 			const result = snapshot[index].call(thisArg, event);
-			if (isThennable(result)) {
+			if (isAwaitable(result)) {
 				++pending;
 				result.then(onHandlerResolved, reject);
 			}
+
+			++index;
 		}
 	});
 }
@@ -37,7 +43,7 @@ function dispatchInSeries<T>(thisArg: any, snapshot: readonly WrappedSignalHandl
 			}
 
 			const result = snapshot[index++].call(thisArg, event);
-			if (isThennable(result)) {
+			if (isAwaitable(result)) {
 				result.then(next, reject);
 			}
 			else {
@@ -49,9 +55,6 @@ function dispatchInSeries<T>(thisArg: any, snapshot: readonly WrappedSignalHandl
 	});
 }
 
-export function createAsyncDispatcher<T = void>(backend: SignalBackend<T>, options?: AsyncSignalOptions) {
-	const run = options?.parallel ? dispatchInParallel : dispatchInSeries;
-	return function (this: any, event?: T) {
-		return run(this, backend.$getSnapshot(), event!);
-	};
+function isAwaitable(obj: any): obj is Promise<any> {
+	return obj && typeof obj.then === 'function';
 }

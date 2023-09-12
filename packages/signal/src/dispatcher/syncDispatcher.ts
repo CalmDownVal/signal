@@ -1,12 +1,14 @@
-import type { SignalBackend, SyncSignalOptions } from '~/types';
+import type { SignalBackend } from '~/types';
 
-export function createSyncDispatcher<T = void>(backend: SignalBackend<T>, _options?: SyncSignalOptions) {
+export function createSyncDispatcher<T = void>(backend: SignalBackend<T>) {
 	return function (this: any, event?: T) {
-		const snapshot = backend.$getSnapshot();
+		const snapshot = backend.$factory.$getSnapshot(backend);
 		const { length } = snapshot;
 
-		for (let i = 0; i < length; ++i) {
-			void snapshot[i].call(this, event!);
+		let index = 0;
+		while (index < length) {
+			snapshot[index].call(this, event!);
+			++index;
 		}
 	};
 }

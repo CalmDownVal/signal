@@ -1,12 +1,12 @@
-import { ArrayBackend } from './backend/ArrayBackend';
-import { SetBackend } from './backend/SetBackend';
+import { ArrayBackendFactory } from './backend/ArrayBackend';
+import { SetBackendFactory } from './backend/SetBackend';
 import { createAsyncDispatcher } from './dispatcher/asyncDispatcher';
 import { createSyncDispatcher } from './dispatcher/syncDispatcher';
 import type {
 	AsyncSignal,
 	AsyncSignalOptions,
 	Signal,
-	SignalBackend,
+	SignalBackendFactory,
 	SignalBackendType,
 	SignalHandler,
 	SignalHandlerOptions,
@@ -15,9 +15,9 @@ import type {
 	SyncSignalOptions
 } from './types';
 
-const BACKEND_MAP: Record<SignalBackendType, (new <T>() => SignalBackend<T>) | undefined> = {
-	array: ArrayBackend,
-	set: SetBackend
+const BACKEND_MAP: Record<SignalBackendType, SignalBackendFactory | undefined> = {
+	array: ArrayBackendFactory,
+	set: SetBackendFactory
 };
 
 /**
@@ -35,11 +35,11 @@ export function create<T = void>(options?: AsyncSignalOptions): AsyncSignal<T>;
  */
 export function create<T = void>(options?: SignalOptions): Signal<T>;
 export function create<T = void>(options: SignalOptions = {}): Signal<T> {
-	const backend = new (BACKEND_MAP[options.backend!] ?? ArrayBackend)<T>();
+	const backend = (BACKEND_MAP[options.backend!] ?? ArrayBackendFactory).$create();
 	const isAsync = options.async === true;
 	const dispatcher: any = isAsync
 		? createAsyncDispatcher(backend, options)
-		: createSyncDispatcher(backend, options as SyncSignalOptions);
+		: createSyncDispatcher(backend);
 
 	dispatcher.$backend = backend;
 	dispatcher.isAsync = isAsync;
@@ -62,8 +62,8 @@ export function off<T>(signal: Signal<T>): boolean;
 export function off<T>(signal: Signal<T>, handler: SignalHandler<T>): boolean;
 export function off<T>(signal: Signal<T>, handler?: SignalHandler<T>): boolean {
 	return handler
-		? signal.$backend.$delete(handler)
-		: signal.$backend.$clear();
+		? signal.$backend.$factory.$delete(signal.$backend, handler)
+		: signal.$backend.$factory.$clear(signal.$backend);
 }
 
 /**
@@ -77,14 +77,14 @@ export function once<T>(signal: Signal<T>, handler: SignalHandler<T>): void {
 			return undefined;
 		}
 
-		signal.$backend.$deleteWrapped(wrapped);
+		signal.$backend.$factory.$deleteWrapped(signal.$backend, wrapped);
 		wasTriggered = true;
 
 		return handler.call(this, event!);
 	};
 
 	wrapped.$once = handler;
-	signal.$backend.$add(wrapped);
+	signal.$backend.$factory.$add(signal.$backend, wrapped);
 }
 
 /**
@@ -95,7 +95,7 @@ export function on<T>(signal: Signal<T>, handler: SignalHandler<T>, options?: Si
 		once(signal, handler);
 	}
 	else {
-		signal.$backend.$add(handler);
+		signal.$backend.$factory.$add(signal.$backend, handler);
 	}
 }
 
@@ -119,7 +119,7 @@ export function subscribe<T>(signal: Signal<T>, handler: SignalHandler<T>, optio
 export function lazy<T>(signal: SyncSignal<T>, lazyEvent: () => T): boolean;
 export function lazy<T>(signal: AsyncSignal<T>, lazyEvent: () => T): Promise<boolean>;
 export function lazy<T>(this: any, signal: Signal<T>, lazyEvent: () => T) {
-	if (signal.$backend.$count()) {
+	if (signal.$backend.$factory.$size(signal.$backend)) {
 		const call = (signal as any).call(this, lazyEvent());
 		return signal.isAsync
 			? (call as Promise<void>).then(() => true)

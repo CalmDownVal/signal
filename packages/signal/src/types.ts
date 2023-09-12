@@ -23,12 +23,18 @@ export interface WrappedSignalHandler<T> extends SignalHandler<T> {
 
 /** @internal */
 export interface SignalBackend<T> {
-	$add(handler: WrappedSignalHandler<T>): void;
-	$clear(): boolean;
-	$count(): number;
-	$delete(handler: SignalHandler<T>): boolean;
-	$deleteWrapped(handler: WrappedSignalHandler<T>): void;
-	$getSnapshot(): readonly WrappedSignalHandler<T>[];
+	readonly $factory: SignalBackendFactory<this, T>;
+}
+
+/** @internal */
+export interface SignalBackendFactory<TBackend extends SignalBackend<any> = SignalBackend<any>, TSignal = any> {
+	$create(): TBackend;
+	$add(backend: TBackend, handler: WrappedSignalHandler<TSignal>): void;
+	$clear(backend: TBackend): boolean;
+	$size(backend: TBackend): number;
+	$delete(backend: TBackend, handler: SignalHandler<TSignal>): boolean;
+	$deleteWrapped(backend: TBackend, handler: WrappedSignalHandler<TSignal>): void;
+	$getSnapshot(backend: TBackend): readonly WrappedSignalHandler<TSignal>[];
 }
 
 export type SignalBackendType = 'array' | 'set';
