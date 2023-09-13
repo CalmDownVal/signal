@@ -2,17 +2,25 @@ import EventEmitter from 'node:events';
 
 import { create, off, on, type SyncSignal } from '@cdv/signal';
 
-import type { Runner } from '~/Runner';
-import { BACKENDS, repeat, times } from '~/utils';
+import { Runner } from '~/core/Runner';
+import { BACKENDS, repeat, times } from '~/core/utils/misc';
 
-export function testAddingHandlers(runner: Runner, n: number) {
+interface Params {
+	readonly n: number;
+}
+
+await Runner.benchmark<Params>(({ n }) => {
 	const handlers = times(n, () => () => {});
 
-	return runner.benchmark({
-		title: `Add ${n} Handlers, Then Reset`,
+	return {
+		title: `Add ${n} Handlers, Then Remove All`,
 		comment: `\
-This is a somewhat unfair comparison for the Set backend, as it has additional
-logic to only allow unique handlers.`,
+This test adds ${n} unique handlers and then removes them all using the
+\`removeAllListeners\` or \`off\` methods for EventEmitter or Signal instances
+respectively.
+
+For the Set backend, this is a somewhat unfair comparison, as it has additional
+logic to ensure handler uniqueness.`,
 		testCases: [
 			{
 				name: 'EventEmitter',
@@ -41,5 +49,5 @@ logic to only allow unique handlers.`,
 				}
 			}))
 		]
-	});
-}
+	};
+});

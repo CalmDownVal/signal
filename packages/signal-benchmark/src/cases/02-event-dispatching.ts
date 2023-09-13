@@ -2,13 +2,22 @@ import EventEmitter from 'node:events';
 
 import { create, on, type SyncSignal } from '@cdv/signal';
 
-import type { Runner } from '~/Runner';
-import { BACKENDS, repeat } from '~/utils';
+import { Runner } from '~/core/Runner';
+import { BACKENDS, repeat, times } from '~/core/utils/misc';
 
-export function testEventDispatching(runner: Runner, n: number) {
+interface Params {
+	readonly n: number;
+}
+
+await Runner.benchmark<Params>(({ n }) => {
+	const handlers = times(n, () => () => {});
 	const event = {};
-	return runner.benchmark({
+
+	return {
 		title: `Dispatch to ${n} Handlers`,
+		comment: `\
+This test dispatches an event object to an EventEmitter or Signal with ${n}
+handlers.`,
 		testCases: [
 			{
 				name: 'EventEmitter',
@@ -16,8 +25,8 @@ export function testEventDispatching(runner: Runner, n: number) {
 					const emitter = new EventEmitter();
 					emitter.setMaxListeners(n);
 
-					repeat(n, () => {
-						emitter.addListener('test', () => {});
+					repeat(n, i => {
+						emitter.addListener('test', handlers[i]);
 					});
 
 					return emitter;
@@ -31,8 +40,8 @@ export function testEventDispatching(runner: Runner, n: number) {
 				init() {
 					const signal = create({ backend });
 
-					repeat(n, () => {
-						on(signal, () => {});
+					repeat(n, i => {
+						on(signal, handlers[i]);
 					});
 
 					return signal;
@@ -42,5 +51,5 @@ export function testEventDispatching(runner: Runner, n: number) {
 				}
 			}))
 		]
-	});
-}
+	};
+});

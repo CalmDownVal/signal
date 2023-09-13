@@ -2,13 +2,18 @@ import EventEmitter from 'node:events';
 
 import { create, on, off, type SyncSignal } from '@cdv/signal';
 
-import type { Runner } from '~/Runner';
-import { BACKENDS, repeat } from '~/utils';
+import { Runner } from '~/core/Runner';
+import { BACKENDS, repeat, times } from '~/core/utils/misc';
 
-export function testRemovingHandlers(runner: Runner, n: number) {
+interface Params {
+	readonly n: number;
+}
+
+await Runner.benchmark<Params>(({ n }) => {
+	const handlers = times(n, () => () => {});
 	const unknownHandler = () => {};
 
-	return runner.benchmark({
+	return {
 		title: `Removing With ${n} Other Handlers Attached`,
 		comment: `\
 This test first adds ${n} unique handlers to a Signal instance and then attempts
@@ -21,8 +26,8 @@ worst-case performance of the handler lookup.`,
 					const emitter = new EventEmitter();
 					emitter.setMaxListeners(n);
 
-					repeat(n, () => {
-						emitter.addListener('test', () => {});
+					repeat(n, i => {
+						emitter.addListener('test', handlers[i]);
 					});
 
 					return emitter;
@@ -36,8 +41,8 @@ worst-case performance of the handler lookup.`,
 				init() {
 					const signal = create({ backend });
 
-					repeat(n, () => {
-						on(signal, () => {});
+					repeat(n, i => {
+						on(signal, handlers[i]);
 					});
 
 					return signal;
@@ -47,5 +52,5 @@ worst-case performance of the handler lookup.`,
 				}
 			}))
 		]
-	});
-}
+	};
+});

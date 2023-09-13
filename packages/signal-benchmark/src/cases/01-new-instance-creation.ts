@@ -1,17 +1,20 @@
 import EventEmitter from 'node:events';
 
-import { create } from '@cdv/signal';
+import { create, type SignalOptions } from '@cdv/signal';
 
-import type { Runner } from '~/Runner';
-import { BACKENDS } from '~/utils';
+import { Runner } from '~/core/Runner';
+import { BACKENDS } from '~/core/utils/misc';
 
-export function testNewInstanceCreation(runner: Runner) {
+await Runner.benchmark(() => {
 	// Assigning to this variable prevents V8 from over-optimizing the test cases.
 	/* eslint-disable @typescript-eslint/no-unused-vars */
 	let instance: any;
 
-	return runner.benchmark({
+	return {
 		title: 'New Instance Creation',
+		comment: `\
+This test simply creates a new instance of EventEmitter or Signal with no
+additional logic`,
 		testCases: [
 			{
 				name: 'EventEmitter',
@@ -21,10 +24,13 @@ export function testNewInstanceCreation(runner: Runner) {
 			},
 			...BACKENDS.map(backend => ({
 				name: `Signal (${backend} backend)`,
-				test() {
-					instance = create({ backend });
+				init() {
+					return { backend };
+				},
+				test(options: SignalOptions) {
+					instance = create(options);
 				}
 			}))
 		]
-	});
-}
+	};
+});

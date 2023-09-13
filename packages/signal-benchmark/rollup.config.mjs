@@ -4,10 +4,21 @@ import { nodeExternals } from 'rollup-plugin-node-externals';
 
 // eslint-disable-next-line import/no-default-export
 export default {
-	input: './src/index.ts',
+	input: {
+		'runner': './src/index.ts',
+
+		// benchmarks:
+		'01-new-instance-creation': './src/cases/01-new-instance-creation.ts',
+		'02-event-dispatching': './src/cases/02-event-dispatching.ts',
+		'03-adding-handlers': './src/cases/03-adding-handlers.ts',
+		'04-removing-handlers': './src/cases/04-removing-handlers.ts'
+	},
 	output: {
-		file: './build/index.esm.mjs',
-		format: 'esm'
+		dir: './build',
+		entryFileNames: '[name].mjs',
+		chunkFileNames: '[name]-[hash].mjs',
+		format: 'esm',
+		exports: 'named'
 	},
 	plugins: [
 		deleteBeforeBuild({
