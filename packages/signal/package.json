@@ -1,7 +1,7 @@
 {
 	"name": "@cdv/signal",
 	"description": "A lightweight event dispatcher.",
-	"version": "4.2.1",
+	"version": "4.3.0",
 	"license": "ISC",
 	"main": "./build/index.cjs.min.js",
 	"module": "./build/index.esm.min.mjs",

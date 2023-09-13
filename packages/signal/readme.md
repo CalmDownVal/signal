@@ -41,7 +41,7 @@ slight learning curve, but here's why it may all be worth it:
 - ✅ supports async handlers with serial or parallel invocation
 - ✅ does not rely on event name strings
 - ✅ suitable for high-performance applications
-- ✅ tiny (~2.4 kB) and without any dependencies
+- ✅ tiny (~2 kB) and without any dependencies
 - ✅ does not rely on class inheritance or mixins
 - ✅ comes bundled with TypeScript typings
 - ✅ smoothly integrates with standard event emitter APIs
@@ -349,6 +349,9 @@ forwarding the `MouseEvent` object as well as `this` to all its handlers.
 
 ## Changelog
 
+- 4.3.0
+  - The package is now distributed under `@cdv/signal`.
+  - Improved backend implementation.
 - 4.2.0
   - Added the `subscribe` method.
 - 4.1.0
