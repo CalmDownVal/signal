@@ -67,7 +67,7 @@ ${result.comment}
 			stream.write(`\
 # Signal Benchmark Results
 
-This run has been generated with NodeJS ${process.version} on ${OS.type()} ${OS.release()}, ${OS.cpus()[0].model}, ${OS.arch()}.
+This run has been generated with NodeJS ${process.version} (V8: ${process.versions.v8}) on ${OS.type()} ${OS.release()}, ${OS.cpus()[0].model}, ${OS.arch()}.
 `, onFirstWrite);
 		});
 	}

@@ -1,6 +1,6 @@
 # Signal Benchmark Results
 
-This run has been generated with NodeJS v19.5.0 on Darwin 22.5.0, Apple M1 Max, arm64.
+This run has been generated with NodeJS v21.5.0 (V8: 11.8.172.17-node.18) on Darwin 23.1.0, Apple M1 Max, arm64.
 
 ## New Instance Creation
 
@@ -9,9 +9,9 @@ additional logic
 
 | Rank | Test Case | Observation | Relative Speed |
 |------|-----------|-------------|----------------|
-| 1 | Signal (array backend) | 148 021 163 ops/sec ±1.46% (99 samples) | - |
-| 2 | EventEmitter | 45 090 472 ops/sec ±1.57% (96 samples) | 69.54% slower |
-| 3 | Signal (set backend) | 19 098 441 ops/sec ±0.18% (98 samples) | 87.10% slower |
+| 1 | Signal (array backend) | 149 621 466 ops/sec ±0.16% (96 samples) | - |
+| 2 | EventEmitter | 46 623 547 ops/sec ±0.25% (99 samples) | 68.84% slower |
+| 3 | Signal (set backend) | 17 142 482 ops/sec ±0.11% (95 samples) | 88.54% slower |
 
 ## Dispatch to 100 Handlers
 
@@ -20,9 +20,9 @@ handlers.
 
 | Rank | Test Case | Observation | Relative Speed |
 |------|-----------|-------------|----------------|
-| 1 | Signal (array backend) | 1 997 596 ops/sec ±0.28% (98 samples) | - |
-| 2 | Signal (set backend) | 1 946 071 ops/sec ±0.27% (97 samples) | 2.58% slower |
-| 3 | EventEmitter | 1 804 494 ops/sec ±0.59% (100 samples) | 9.67% slower |
+| 1 | Signal (array backend) | 2 027 613 ops/sec ±0.17% (96 samples) | - |
+| 2 | Signal (set backend) | 2 016 970 ops/sec ±0.14% (100 samples) | 0.52% slower |
+| 3 | EventEmitter | 1 814 731 ops/sec ±0.15% (98 samples) | 10.50% slower |
 
 ## Add 100 Handlers, Then Remove All
 
@@ -35,9 +35,9 @@ logic to ensure handler uniqueness.
 
 | Rank | Test Case | Observation | Relative Speed |
 |------|-----------|-------------|----------------|
-| 1 | Signal (array backend) | 1 269 621 ops/sec ±2.30% (94 samples) | - |
-| 2 | EventEmitter | 544 519 ops/sec ±0.53% (94 samples) | 57.11% slower |
-| 3 | Signal (set backend) | 168 956 ops/sec ±0.68% (93 samples) | 86.69% slower |
+| 1 | Signal (array backend) | 2 123 021 ops/sec ±0.22% (96 samples) | - |
+| 2 | EventEmitter | 531 008 ops/sec ±0.19% (96 samples) | 74.99% slower |
+| 3 | Signal (set backend) | 175 694 ops/sec ±0.95% (85 samples) | 91.72% slower |
 
 ## Removing With 100 Other Handlers Attached
 
@@ -47,6 +47,6 @@ worst-case performance of the handler lookup.
 
 | Rank | Test Case | Observation | Relative Speed |
 |------|-----------|-------------|----------------|
-| 1 | Signal (set backend) | 104 663 634 ops/sec ±0.18% (96 samples) | - |
-| 2 | EventEmitter | 9 436 236 ops/sec ±0.26% (99 samples) | 90.98% slower |
-| 3 | Signal (array backend) | 9 134 404 ops/sec ±0.35% (94 samples) | 91.27% slower |
+| 1 | Signal (set backend) | 104 774 352 ops/sec ±0.14% (96 samples) | - |
+| 2 | Signal (array backend) | 9 643 496 ops/sec ±0.16% (95 samples) | 90.80% slower |
+| 3 | EventEmitter | 9 391 190 ops/sec ±0.22% (97 samples) | 91.04% slower |

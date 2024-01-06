@@ -36,12 +36,12 @@ yarn add @cdv/signal
 
 Signal is a somwehat niche alternative to the usual EventEmitter (Node) /
 EventTarget (DOM) APIs. It looks and feels quite different and may involve a
-slight learning curve, but here's why it may all be worth it:
+slight learning curve, but here's why it might be worth it:
 
 - ✅ supports async handlers with serial or parallel invocation
 - ✅ does not rely on event name strings
 - ✅ suitable for high-performance applications
-- ✅ tiny (~2 kB) and without any dependencies
+- ✅ tiny (<2 kB) and without any dependencies
 - ✅ does not rely on class inheritance or mixins
 - ✅ comes bundled with TypeScript typings
 - ✅ smoothly integrates with standard event emitter APIs

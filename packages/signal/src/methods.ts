@@ -119,7 +119,7 @@ export function subscribe<T>(signal: Signal<T>, handler: SignalHandler<T>, optio
 export function lazy<T>(signal: SyncSignal<T>, lazyEvent: () => T): boolean;
 export function lazy<T>(signal: AsyncSignal<T>, lazyEvent: () => T): Promise<boolean>;
 export function lazy<T>(this: any, signal: Signal<T>, lazyEvent: () => T) {
-	if (signal.$backend.$factory.$size(signal.$backend)) {
+	if (signal.$backend.$factory.$size(signal.$backend) > 0) {
 		const call = (signal as any).call(this, lazyEvent());
 		return signal.isAsync
 			? (call as Promise<void>).then(() => true)

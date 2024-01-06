@@ -26,7 +26,7 @@ export const ArrayBackendFactory: SignalBackendFactory<ArrayBackend<any>> = {
 			return false;
 		}
 
-		backend.$handlers = [];
+		backend.$handlers.length = 0;
 		backend.$snapshot = null;
 		return true;
 	},
@@ -38,22 +38,20 @@ export const ArrayBackendFactory: SignalBackendFactory<ArrayBackend<any>> = {
 		let index = $handlers.length - 1;
 		let current;
 
+		// Searching from the back: The same handler can be added multiple times
+		// and we must remove the last one to preserve execution order.
 		while (index >= 0) {
 			current = $handlers[index];
 			if (current === handler || current.$once === handler) {
-				break;
+				$handlers.splice(index, 1);
+				backend.$snapshot = null;
+				return true;
 			}
 
 			--index;
 		}
 
-		if (index === -1) {
-			return false;
-		}
-
-		$handlers.splice(index, 1);
-		backend.$snapshot = null;
-		return true;
+		return false;
 	},
 	$deleteWrapped(backend, handler) {
 		const index = backend.$handlers.lastIndexOf(handler);

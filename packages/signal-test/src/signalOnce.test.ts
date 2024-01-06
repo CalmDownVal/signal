@@ -66,3 +66,16 @@ forEachBackend('Signal.once()', backend => {
 		assert(callback.calledOnce);
 	});
 });
+
+describe('[backend: set] Signal.once()', () => {
+	it('should not distinct `once` wrapped handlers from their original handler', () => {
+		const handler = sinon.fake();
+		const test = Signal.create({ backend: 'set' });
+
+		Signal.on(test, handler);
+		Signal.once(test, handler);
+		test();
+
+		assert(handler.calledOnce);
+	});
+});
