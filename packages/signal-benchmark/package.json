@@ -6,16 +6,16 @@
 		"@cdv/signal": "workspace:*"
 	},
 	"devDependencies": {
-		"@rollup/plugin-typescript": "11.1.3",
-		"@types/benchmark": "2.1.2",
-		"@types/node": "20.6.0",
+		"@rollup/plugin-typescript": "11.1.5",
+		"@types/benchmark": "2.1.5",
+		"@types/node": "20.10.6",
 		"benchmark": "2.1.4",
-		"rollup": "3.29.1",
+		"rollup": "4.9.3",
 		"rollup-plugin-delete": "2.0.0",
-		"rollup-plugin-dts": "6.0.2",
-		"rollup-plugin-node-externals": "6.1.1",
+		"rollup-plugin-dts": "6.1.0",
+		"rollup-plugin-node-externals": "6.1.2",
 		"tslib": "2.6.2",
-		"typescript": "5.2.2"
+		"typescript": "5.3.3"
 	},
 	"scripts": {
 		"start": "rollup --config && node --expose-gc ./build/runner.mjs"
