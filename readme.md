@@ -103,7 +103,7 @@ Signal instances. Generally sets should be preferred when you need to enforce
 unique handlers or when optimizing for *a lot* of `on` and `off` calls.
 
 For a more in-depth performance analysis see
-[latest benchmark results](../signal-benchmark/benchmark-results.md).
+[latest benchmark results](./packages/signal-benchmark/benchmark-results.md).
 
 ### Adding Handlers
 
