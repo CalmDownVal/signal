@@ -1,5 +1,6 @@
 import type { AsyncSignalOptions, SignalBackend, WrappedSignalHandler } from '~/types';
 
+/** @internal */
 export function createAsyncDispatcher<T = void>(backend: SignalBackend<T>, options?: AsyncSignalOptions) {
 	const run = options?.parallel ? dispatchInParallel : dispatchInSeries;
 	return function (this: any, event?: T) {
@@ -9,19 +10,20 @@ export function createAsyncDispatcher<T = void>(backend: SignalBackend<T>, optio
 
 function dispatchInParallel<T>(thisArg: any, snapshot: readonly WrappedSignalHandler<T>[], event: T) {
 	return new Promise<void>((resolve, reject) => {
-		const { length } = snapshot;
 		let pending = 0;
+		let index = 0;
+		let result;
 
+		const { length } = snapshot;
 		const onHandlerResolved = () => {
 			if (--pending === 0) {
 				resolve();
 			}
 		};
 
-		let index = 0;
 		while (index < length) {
-			const result = snapshot[index].call(thisArg, event);
-			if (isAwaitable(result)) {
+			result = snapshot[index].call(thisArg, event);
+			if (isThenable(result)) {
 				++pending;
 				result.then(onHandlerResolved, reject);
 			}
@@ -33,9 +35,9 @@ function dispatchInParallel<T>(thisArg: any, snapshot: readonly WrappedSignalHan
 
 function dispatchInSeries<T>(thisArg: any, snapshot: readonly WrappedSignalHandler<T>[], event: T) {
 	return new Promise<void>((resolve, reject) => {
-		const { length } = snapshot;
 		let index = 0;
 
+		const { length } = snapshot;
 		const next = () => {
 			if (index >= length) {
 				resolve();
@@ -43,7 +45,7 @@ function dispatchInSeries<T>(thisArg: any, snapshot: readonly WrappedSignalHandl
 			}
 
 			const result = snapshot[index++].call(thisArg, event);
-			if (isAwaitable(result)) {
+			if (isThenable(result)) {
 				result.then(next, reject);
 			}
 			else {
@@ -55,6 +57,6 @@ function dispatchInSeries<T>(thisArg: any, snapshot: readonly WrappedSignalHandl
 	});
 }
 
-function isAwaitable(obj: any): obj is Promise<any> {
+function isThenable(obj: any): obj is Promise<any> {
 	return obj && typeof obj.then === 'function';
 }

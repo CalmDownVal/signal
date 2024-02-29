@@ -100,12 +100,12 @@ export class Runner {
 		const init = await receive<MainToWorkerMessage>(parentPort!);
 		const setup = block(init.params as T);
 		const suite = new Benchmark.Suite(setup.title, {
-			initCount: 100,
+			initCount: 50,
 
 			// times are in seconds
 			delay: 3,
 			minTime: 5,
-			maxTime: 10
+			maxTime: 20
 		});
 
 		for (const testCase of setup.testCases) {

@@ -6,6 +6,7 @@ export interface SetBackend<T> extends SignalBackend<T> {
 	$snapshot: WrappedSignalHandler<T>[] | null;
 }
 
+/** @internal */
 export const SetBackendFactory: SignalBackendFactory<SetBackend<any>> = {
 	$create() {
 		return {
@@ -32,7 +33,7 @@ export const SetBackendFactory: SignalBackendFactory<SetBackend<any>> = {
 		backend.$snapshot = null;
 	},
 	$clear(backend) {
-		if (this.$size(backend) > 0) {
+		if (backend.$handlers.size > 0) {
 			backend.$handlers.clear();
 			backend.$snapshot = null;
 			return true;

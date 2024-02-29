@@ -6,8 +6,6 @@ import type {
 	AsyncSignal,
 	AsyncSignalOptions,
 	Signal,
-	SignalBackendFactory,
-	SignalBackendType,
 	SignalHandler,
 	SignalHandlerOptions,
 	SignalOptions,
@@ -15,10 +13,7 @@ import type {
 	SyncSignalOptions
 } from './types';
 
-const BACKEND_MAP: Record<SignalBackendType, SignalBackendFactory | undefined> = {
-	array: ArrayBackendFactory,
-	set: SetBackendFactory
-};
+const EMPTY_OBJECT = {};
 
 /**
  * Creates a new synchronous Signal instance.
@@ -34,8 +29,8 @@ export function create<T = void>(options?: AsyncSignalOptions): AsyncSignal<T>;
  * Creates a new Signal instance.
  */
 export function create<T = void>(options?: SignalOptions): Signal<T>;
-export function create<T = void>(options: SignalOptions = {}): Signal<T> {
-	const backend = (BACKEND_MAP[options.backend!] ?? ArrayBackendFactory).$create();
+export function create<T = void>(options: SignalOptions = EMPTY_OBJECT): Signal<T> {
+	const backend = (options.backend === 'set' ? SetBackendFactory : ArrayBackendFactory).$create();
 	const isAsync = options.async === true;
 	const dispatcher: any = isAsync
 		? createAsyncDispatcher(backend, options)
@@ -70,32 +65,41 @@ export function off<T>(signal: Signal<T>, handler?: SignalHandler<T>): boolean {
  * Attaches a handler to a Signal that is automatically removed after its first
  * invocation.
  */
-export function once<T>(signal: Signal<T>, handler: SignalHandler<T>, options?: SignalHandlerOptions): void {
+export function once<T>(
+	signal: Signal<T>,
+	handler: SignalHandler<T>,
+	options: SignalHandlerOptions = EMPTY_OBJECT
+): void {
 	let wasTriggered = false;
+	const backend = signal.$backend;
 	const wrapped = function (this: any, event?: T) {
 		if (wasTriggered) {
 			return undefined;
 		}
 
-		signal.$backend.$factory.$deleteWrapped(signal.$backend, wrapped);
+		backend.$factory.$deleteWrapped(backend, wrapped);
 		wasTriggered = true;
 
 		return handler.call(this, event!);
 	};
 
 	wrapped.$once = handler;
-	signal.$backend.$factory.$add(signal.$backend, wrapped, options?.prepend);
+	backend.$factory.$add(backend, wrapped, options.prepend);
 }
 
 /**
  * Attaches a handler to a Signal.
  */
-export function on<T>(signal: Signal<T>, handler: SignalHandler<T>, options?: SignalHandlerOptions): void {
-	if (options?.once) {
+export function on<T>(
+	signal: Signal<T>,
+	handler: SignalHandler<T>,
+	options: SignalHandlerOptions = EMPTY_OBJECT
+): void {
+	if (options.once) {
 		once(signal, handler);
 	}
 	else {
-		signal.$backend.$factory.$add(signal.$backend, handler, options?.prepend);
+		signal.$backend.$factory.$add(signal.$backend, handler, options.prepend);
 	}
 }
 
@@ -103,7 +107,11 @@ export function on<T>(signal: Signal<T>, handler: SignalHandler<T>, options?: Si
  * Attaches a handler to a Signal and returns a function that detaches it when
  * called.
  */
-export function subscribe<T>(signal: Signal<T>, handler: SignalHandler<T>, options?: SignalHandlerOptions): () => void {
+export function subscribe<T>(
+	signal: Signal<T>,
+	handler: SignalHandler<T>,
+	options: SignalHandlerOptions = EMPTY_OBJECT
+): () => void {
 	on(signal, handler, options);
 	return () => off(signal, handler);
 }

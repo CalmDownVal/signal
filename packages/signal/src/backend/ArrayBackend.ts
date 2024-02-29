@@ -6,6 +6,7 @@ export interface ArrayBackend<T> extends SignalBackend<T> {
 	$snapshot: WrappedSignalHandler<T>[] | null;
 }
 
+/** @internal */
 export const ArrayBackendFactory: SignalBackendFactory<ArrayBackend<any>> = {
 	$create() {
 		return {
