@@ -166,8 +166,6 @@ const RAW_RUNTIME_STATE =
           ["@rollup/plugin-terser", "virtual:70eed5572842de0e680a683643dc7f7762e8560a0c37b37b1fb97a05b7b365215332cee8e610671f900b8f7017b618354f0969024d58437cf385d668a83a3b8f#npm:0.4.4"],\
           ["@rollup/plugin-typescript", "virtual:70eed5572842de0e680a683643dc7f7762e8560a0c37b37b1fb97a05b7b365215332cee8e610671f900b8f7017b618354f0969024d58437cf385d668a83a3b8f#npm:11.1.6"],\
           ["rollup", "npm:4.12.0"],\
-          ["rollup-plugin-copy", "npm:3.5.0"],\
-          ["rollup-plugin-delete", "npm:2.0.0"],\
           ["rollup-plugin-dts", "virtual:70eed5572842de0e680a683643dc7f7762e8560a0c37b37b1fb97a05b7b365215332cee8e610671f900b8f7017b618354f0969024d58437cf385d668a83a3b8f#npm:6.1.0"],\
           ["tslib", "npm:2.6.2"],\
           ["typescript", "patch:typescript@npm%3A5.3.3#optional!builtin<compat/typescript>::version=5.3.3&hash=e012d7"]\
@@ -793,16 +791,6 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "./.yarn/cache/@types-estree-npm-1.0.5-5b7faed3b4-7de6d928dd.zip/node_modules/@types/estree/",\
         "packageDependencies": [\
           ["@types/estree", "npm:1.0.5"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
-    ["@types/fs-extra", [\
-      ["npm:8.1.5", {\
-        "packageLocation": "./.yarn/cache/@types-fs-extra-npm-8.1.5-77d3a95112-565d9e55cd.zip/node_modules/@types/fs-extra/",\
-        "packageDependencies": [\
-          ["@types/fs-extra", "npm:8.1.5"],\
-          ["@types/node", "npm:20.6.0"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -1638,15 +1626,6 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
-    ["colorette", [\
-      ["npm:1.4.0", {\
-        "packageLocation": "./.yarn/cache/colorette-npm-1.4.0-7e94b44dc3-c8d6c8c3ef.zip/node_modules/colorette/",\
-        "packageDependencies": [\
-          ["colorette", "npm:1.4.0"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
     ["commander", [\
       ["npm:2.20.3", {\
         "packageLocation": "./.yarn/cache/commander-npm-2.20.3-d8dcbaa39b-90c5b68986.zip/node_modules/commander/",\
@@ -2391,18 +2370,6 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
-    ["fs-extra", [\
-      ["npm:8.1.0", {\
-        "packageLocation": "./.yarn/cache/fs-extra-npm-8.1.0-197473387f-6fb12449f5.zip/node_modules/fs-extra/",\
-        "packageDependencies": [\
-          ["fs-extra", "npm:8.1.0"],\
-          ["graceful-fs", "npm:4.2.11"],\
-          ["jsonfile", "npm:4.0.0"],\
-          ["universalify", "npm:0.1.2"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
     ["fs-minipass", [\
       ["npm:2.1.0", {\
         "packageLocation": "./.yarn/cache/fs-minipass-npm-2.1.0-501ef87306-03191781e9.zip/node_modules/fs-minipass/",\
@@ -2599,21 +2566,6 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["globby", [\
-      ["npm:10.0.1", {\
-        "packageLocation": "./.yarn/cache/globby-npm-10.0.1-35fa2ba87a-ea724a820d.zip/node_modules/globby/",\
-        "packageDependencies": [\
-          ["globby", "npm:10.0.1"],\
-          ["@types/glob", "npm:7.2.0"],\
-          ["array-union", "npm:2.1.0"],\
-          ["dir-glob", "npm:3.0.1"],\
-          ["fast-glob", "npm:3.3.1"],\
-          ["glob", "npm:7.2.3"],\
-          ["ignore", "npm:5.2.4"],\
-          ["merge2", "npm:1.4.1"],\
-          ["slash", "npm:3.0.0"]\
-        ],\
-        "linkType": "HARD"\
-      }],\
       ["npm:10.0.2", {\
         "packageLocation": "./.yarn/cache/globby-npm-10.0.2-9b274c88d3-6974752014.zip/node_modules/globby/",\
         "packageDependencies": [\
@@ -3065,15 +3017,6 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
-    ["is-plain-object", [\
-      ["npm:3.0.1", {\
-        "packageLocation": "./.yarn/cache/is-plain-object-npm-3.0.1-15b47fb6eb-d13fe75db3.zip/node_modules/is-plain-object/",\
-        "packageDependencies": [\
-          ["is-plain-object", "npm:3.0.1"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
     ["is-regex", [\
       ["npm:1.1.4", {\
         "packageLocation": "./.yarn/cache/is-regex-npm-1.1.4-cca193ef11-36d9174d16.zip/node_modules/is-regex/",\
@@ -3241,16 +3184,6 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "./.yarn/cache/jsonc-parser-npm-3.2.0-1896ece3b7-bd68b902e5.zip/node_modules/jsonc-parser/",\
         "packageDependencies": [\
           ["jsonc-parser", "npm:3.2.0"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
-    ["jsonfile", [\
-      ["npm:4.0.0", {\
-        "packageLocation": "./.yarn/cache/jsonfile-npm-4.0.0-10ce3aea15-17796f0ab1.zip/node_modules/jsonfile/",\
-        "packageDependencies": [\
-          ["jsonfile", "npm:4.0.0"],\
-          ["graceful-fs", "npm:4.2.11"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -4078,20 +4011,6 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
-    ["rollup-plugin-copy", [\
-      ["npm:3.5.0", {\
-        "packageLocation": "./.yarn/cache/rollup-plugin-copy-npm-3.5.0-a5e02864e9-706ba6bd20.zip/node_modules/rollup-plugin-copy/",\
-        "packageDependencies": [\
-          ["rollup-plugin-copy", "npm:3.5.0"],\
-          ["@types/fs-extra", "npm:8.1.5"],\
-          ["colorette", "npm:1.4.0"],\
-          ["fs-extra", "npm:8.1.0"],\
-          ["globby", "npm:10.0.1"],\
-          ["is-plain-object", "npm:3.0.1"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
     ["rollup-plugin-delete", [\
       ["npm:2.0.0", {\
         "packageLocation": "./.yarn/cache/rollup-plugin-delete-npm-2.0.0-f64ea33d5a-8c05b55d0f.zip/node_modules/rollup-plugin-delete/",\
@@ -4838,15 +4757,6 @@ const RAW_RUNTIME_STATE =
         "packageDependencies": [\
           ["unique-slug", "npm:4.0.0"],\
           ["imurmurhash", "npm:0.1.4"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
-    ["universalify", [\
-      ["npm:0.1.2", {\
-        "packageLocation": "./.yarn/cache/universalify-npm-0.1.2-9b22d31d2d-40cdc60f6e.zip/node_modules/universalify/",\
-        "packageDependencies": [\
-          ["universalify", "npm:0.1.2"]\
         ],\
         "linkType": "HARD"\
       }]\

@@ -1,6 +1,5 @@
 {
 	"name": "@cdv/signal-benchmark",
-	"version": "1.0.0",
 	"private": true,
 	"dependencies": {
 		"@cdv/signal": "workspace:*"

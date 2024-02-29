@@ -8,9 +8,15 @@ export interface SignalHandler<T = void> {
 export interface SignalHandlerOptions {
 	/**
 	 * Controls whether the handler should automatically be removed after its
-	 * first invocation.
+	 * first invocation. Defaults to `false`.
 	 */
 	once?: boolean;
+
+	/**
+	 * Controls whether the handler should be inserted at the start of the
+	 * handler collection rather than at the end. Defaults to `false`.
+	 */
+	prepend?: boolean;
 }
 
 /** @internal */
@@ -29,7 +35,7 @@ export interface SignalBackend<T> {
 /** @internal */
 export interface SignalBackendFactory<TBackend extends SignalBackend<any> = SignalBackend<any>, TSignal = any> {
 	$create(): TBackend;
-	$add(backend: TBackend, handler: WrappedSignalHandler<TSignal>): void;
+	$add(backend: TBackend, handler: WrappedSignalHandler<TSignal>, prepend?: boolean): void;
 	$clear(backend: TBackend): boolean;
 	$size(backend: TBackend): number;
 	$delete(backend: TBackend, handler: SignalHandler<TSignal>): boolean;

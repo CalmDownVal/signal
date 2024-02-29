@@ -70,7 +70,7 @@ export function off<T>(signal: Signal<T>, handler?: SignalHandler<T>): boolean {
  * Attaches a handler to a Signal that is automatically removed after its first
  * invocation.
  */
-export function once<T>(signal: Signal<T>, handler: SignalHandler<T>): void {
+export function once<T>(signal: Signal<T>, handler: SignalHandler<T>, options?: SignalHandlerOptions): void {
 	let wasTriggered = false;
 	const wrapped = function (this: any, event?: T) {
 		if (wasTriggered) {
@@ -84,7 +84,7 @@ export function once<T>(signal: Signal<T>, handler: SignalHandler<T>): void {
 	};
 
 	wrapped.$once = handler;
-	signal.$backend.$factory.$add(signal.$backend, wrapped);
+	signal.$backend.$factory.$add(signal.$backend, wrapped, options?.prepend);
 }
 
 /**
@@ -95,7 +95,7 @@ export function on<T>(signal: Signal<T>, handler: SignalHandler<T>, options?: Si
 		once(signal, handler);
 	}
 	else {
-		signal.$backend.$factory.$add(signal.$backend, handler);
+		signal.$backend.$factory.$add(signal.$backend, handler, options?.prepend);
 	}
 }
 

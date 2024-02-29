@@ -17,8 +17,14 @@ export const ArrayBackendFactory: SignalBackendFactory<ArrayBackend<any>> = {
 	$getSnapshot(backend) {
 		return (backend.$snapshot ??= backend.$handlers.slice());
 	},
-	$add(backend, handler) {
-		backend.$handlers.push(handler);
+	$add(backend, handler, prepend) {
+		if (prepend) {
+			backend.$handlers.unshift(handler);
+		}
+		else {
+			backend.$handlers.push(handler);
+		}
+
 		backend.$snapshot = null;
 	},
 	$clear(backend) {

@@ -28,6 +28,30 @@ describe('[backend: array] Signal.on()', () => {
 
 		assert(handler.calledTwice);
 	});
+
+	it('should append handlers at the end by default', () => {
+		const handler1 = sinon.fake();
+		const handler2 = sinon.fake();
+		const test = Signal.create({ backend: 'array' });
+
+		Signal.on(test, handler1);
+		Signal.on(test, handler2);
+		test();
+
+		sinon.assert.callOrder(handler1, handler2);
+	});
+
+	it('should respect the prepend flag', () => {
+		const handler1 = sinon.fake();
+		const handler2 = sinon.fake();
+		const test = Signal.create({ backend: 'array' });
+
+		Signal.on(test, handler1);
+		Signal.on(test, handler2, { prepend: true });
+		test();
+
+		sinon.assert.callOrder(handler2, handler1);
+	});
 });
 
 describe('[backend: set] Signal.on()', () => {

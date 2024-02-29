@@ -60,11 +60,11 @@ To create a signal call the `Signal.create` function. You can pass an options
 object with the following properties:
 
 - `async: boolean`  
-  controls whether the signal should act with respect to promises returned by
-  event handlers, defaults to `false`
+  controls whether the signal should await promises to be returned by event
+  handlers, defaults to `false`
 - `parallel: boolean`  
   controls whether asynchronous handlers will run in parallel or in series, only
-  has effect if async is set to true, defaults to `false` (i.e. serial
+  has effect if `async` is set to `true`, defaults to `false` (i.e. serial
   execution)
 - `backend: 'array' | 'set'`  
   controls which data structure is used to hold the handler collection, see the
@@ -75,31 +75,31 @@ object with the following properties:
 // will invoke handlers synchronously in series
 const syncSignal = Signal.create();
 
-// will invoke handlers asynchronously, in series, one at a time
+// will invoke handlers asynchronously in series
 const serialAsyncSignal = Signal.create({ async: true });
 
-// will invoke handlers asynchronously, all at once, in parallel
+// will invoke handlers asynchronously in parallel
 const parallelAsyncSignal = Signal.create({
   async: true,
   parallel: true
 });
 
-// will use an ES6 Set to hold its list of handlers
+// will use a set to hold its handlers
 const uniqueHandlerSignal = Signal.create({ backend: 'set' });
 ```
 
 ### Signal Backend
 
-Signals currently offer the choice between arrays and ES6 sets as the backing
-data structure holding the collection of registered handlers. The key difference
-is that sets only store unique handlers whereas arrays allow the same handler
-to be added multiple times.
+Signals offer the choice between arrays and sets as the backing data structure
+holding the collection of registered handlers. The key difference is that sets
+only store unique handlers whereas arrays allow the same handler to be added
+multiple times.
 
 Array is the default backend as it is supported in every environment and offers
 the best overall performance for almost all use cases.
 
 Sets have a larger memory footprint and decrease the speed of creating new
-Signal instances. Generally sets should be preferred when you want to enforce
+Signal instances. Generally sets should be preferred when you need to enforce
 unique handlers or when optimizing for *a lot* of `on` and `off` calls.
 
 For a more in-depth performance analysis see
@@ -107,16 +107,17 @@ For a more in-depth performance analysis see
 
 ### Adding Handlers
 
-To add a handler use the `Signal.on` function. The first argument is always a
-signal instance, the second is the handler to add.
+To add a handler use the `Signal.on` function. The first argument is a signal
+instance, the second is the handler to add. An optional third argument with an
+options object can be provided.
 
 ```ts
 Signal.on(mySignal, () => console.log('foo'));
 ```
 
-Handlers will be invoked every time the signal is triggered. You can also set
-the `once` flag to only invoke a handler once and then have it automatically
-removed from the handler list.
+Handlers will be invoked every time the signal is triggered. You can enable the
+`once` option to only invoke a handler once and then have it automatically
+removed from the handler collection.
 
 ```ts
 Signal.on(mySignal, myHandler, { once: true });
@@ -125,16 +126,28 @@ Signal.on(mySignal, myHandler, { once: true });
 Signal.once(mySignal, myHandler);
 ```
 
-Another method to add handlers to a signal is the `Signal.subscribe` function.
-It acts the same as `Signal.on` except it additionally returns an 'unsubscriber'
-function which is often useful when working with libraries like React.
+By default handlers are added at the end of the handler collection and are
+invoked in the same order when the signal is triggered. The `prepend` option can
+be enabled to instead insert at the start of the handler collection. Note that
+this option is only supported by the array backend.
+
+```ts
+Signal.on(mySignal, myHandler1);
+
+// when mySignal is triggered, myHandler2 will be invoked before myHandler1
+Signal.on(mySignal, myHandler2, { prepend: true });
+```
+
+An alternative way to add handlers to a signal is the `Signal.subscribe`
+function. It has the same usage as `Signal.on` but in addition will return an
+'unsubscriber' function. Often useful when working with libraries like React.
 
 ### Removing Handlers
 
 To remove a handler (regardless of the once option), use the `Signal.off`
 function.
 
-If no specific handler is provided as the second argument the `.off` function
+If no specific handler is provided as the second argument, the `.off` function
 will remove *all* handlers registered for the signal.
 
 ```ts
@@ -150,7 +163,7 @@ removed any handlers.
 
 ### Triggering a Signal
 
-Each signal instance is actually a function. Triggering it is as simple as
+Each signal instance is simultaneously a function. Triggering it is as simple as
 adding a pair of brackets! You can pass any data as the first argument to a
 signal, it will be forwarded to each handler. Typically this will be an event
 object with additional information.
@@ -177,7 +190,7 @@ catch (ex) {
 
 You can add async handlers to synchronous signals, but they will be executed in
 a fire-and-forget fashion. This may be desirable in some cases, but keep in mind
-that *any potential promise rejections will not be handled!*
+that *it will be impossible to handle any potential promise rejections!*
 
 ### Checking for Handlers
 
@@ -195,9 +208,9 @@ Signal.lazy(mySignal, () => ({
 }));
 ```
 
-A boolean is returned indicating whether the signal (and thus the callback) has
-been triggered. This is useful for fallback behavior, e.g. logging when no
-handlers are attached to an error signal.
+A boolean is returned indicating whether any handler has been invoked. This is
+useful for fallback behavior, e.g. logging when no handlers are attached to an
+error signal.
 
 ```ts
 try {
@@ -217,11 +230,11 @@ cases.
 
 Asynchronous signal interface is almost identical to its synchronous
 counterpart. The key difference is that an async signal will check the return
-type of every handler and handle all promises it receives.
+type of every handler and handle any promises it receives.
 
 When using async signals all promise rejections are guaranteed to be handled
-regardless of execution strategy used, errors may however get suppressed. See
-below for details.
+regardless of execution strategy used. In some cases errors may be suppressed,
+see below for details.
 
 The execution strategy of async handlers is configurable via the `parallel`
 option (see [Creating a Signal](#creating-a-signal)).
@@ -231,9 +244,9 @@ option (see [Creating a Signal](#creating-a-signal)).
 The default strategy is serial execution. Execution will await each handler
 before moving onto the next one.
 
-This is the default strategy as it's the same one synchronous signals use.
-A promise rejection will immediately propagate upwards and terminate the
-execution. Handlers further down the list will not execute in such case.
+This is the default strategy as it's analogous to synchronous signals. A promise
+rejection will immediately propagate upwards and terminate the execution.
+Handlers further down the execution order will not run in such case.
 
 ```ts
 const mySignal = Signal.create({ async: true });
@@ -248,7 +261,7 @@ await mySignal();
 #### Parallel Execution
 
 When enabled, the signal will invoke all handlers simultaneously and resolve
-once *all* have resolved. If a handler rejects the wrapping promise returned by
+once *all* have resolved. If a handler rejects, the wrapping promise returned by
 the signal will immediately reject as well. This is similar to the behavior of
 `Promise.all`.
 
@@ -265,14 +278,14 @@ Signal.on(mySignal, () => sleep(100));
 await mySignal();
 ```
 
-Keep in mind that if a handler rejects, other handlers continue their execution
-and there is no way to await them anymore. Should any additional rejections
-occur, they will be squelched to avoid unhandled rejections.
+Note that after the first rejection, other handlers continue their execution and
+there is no way to await them anymore. Should any additional rejections occur,
+they are suppressed as there is no longer a way to propagate upwards.
 
 With parallel execution, it is a good practice to either make sure none of the
-handlers ever reject or to pass an abort signal through the event object so that
-you retain some control over the still-pending actions in case a rejection
-occurs, e.g.:
+handlers ever reject, or pass an abort signal through the event object so that
+you retain control over the still-pending actions in case of a rejection,
+e.g.:
 
 ```ts
 const abort = Signal.create();
@@ -286,8 +299,7 @@ catch (ex) {
 ```
 
 Note that the above example has nothing to do with the `AbortController` and
-`AbortSignal` browser APIs. However, you could use those for the same purpose,
-too!
+`AbortSignal` browser APIs. However, you could use those for this purpose too!
 
 ### Forwarding this
 
@@ -296,8 +308,8 @@ using this feature. These stem from how JavaScript functions and the binding of
 `this` work.
 
 Any handler that relies on forwarded `this` has to be a regular function, not an
-arrow function. Signals also need to be contained within the object that you
-wish to forward as `this`.
+arrow function. When contained in an object and called as `obj.signal(...)`,
+that object will be passed as `this` to the signal's handlers.
 
 ```ts
 const obj = {
@@ -313,9 +325,9 @@ Signal.on(obj.mySignal, function () {
 obj.mySignal();
 ```
 
-When signals are not contained within an object (or you need to forward a
-different object), it is necessary to trigger using the `.call` method and
-manually pass the desired reference:
+When signals are not contained within an object, or you wish to forward a
+different one, it is necessary to instead trigger using the `.call` method and
+explicitly pass the desired reference:
 
 ```ts
 const obj = { value: 'bar' };
@@ -343,17 +355,21 @@ button.addEventListener('click', confirmed);
 ```
 
 Now every time the button is clicked the `confirmed` signal will trigger
-forwarding the `MouseEvent` object as well as `this` to all its handlers.
+forwarding the `MouseEvent` object and `this` (in this example, the `<button>`
+reference) to all its handlers.
 
 ## Changelog
 
+- 4.4.0
+  - Added the `prepend` option to `on`, `once` and `subscribe`.
 - 4.3.0
   - The package is now distributed under `@cdv/signal`.
   - Improved backend implementation.
 - 4.2.0
   - Added the `subscribe` method.
 - 4.1.0
-  - The `lazy` util now returns booleans indicating if the signal was triggered.
+  - The `lazy` util now returns booleans indicating whether the signal was
+    triggered.
 - 4.0.0
   - Changed `es6map` backend to `set`.
   - Removed `hasHandlers` getter, use `lazy` instead.
