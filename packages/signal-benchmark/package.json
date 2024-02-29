@@ -6,14 +6,14 @@
 		"@cdv/signal": "workspace:*"
 	},
 	"devDependencies": {
-		"@rollup/plugin-typescript": "11.1.5",
+		"@rollup/plugin-typescript": "11.1.6",
 		"@types/benchmark": "2.1.5",
-		"@types/node": "20.10.6",
+		"@types/node": "20.11.22",
 		"benchmark": "2.1.4",
-		"rollup": "4.9.3",
+		"rollup": "4.12.0",
 		"rollup-plugin-delete": "2.0.0",
 		"rollup-plugin-dts": "6.1.0",
-		"rollup-plugin-node-externals": "6.1.2",
+		"rollup-plugin-node-externals": "7.0.1",
 		"tslib": "2.6.2",
 		"typescript": "5.3.3"
 	},

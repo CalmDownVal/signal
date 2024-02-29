@@ -1,6 +1,5 @@
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
-import deleteBeforeBuild from 'rollup-plugin-delete';
 import definitions from 'rollup-plugin-dts';
 
 // eslint-disable-next-line import/no-default-export
@@ -22,10 +21,6 @@ export default [
 			}
 		],
 		plugins: [
-			deleteBeforeBuild({
-				runOnce: true,
-				targets: './build/*'
-			}),
 			typescript(),
 			terser({
 				mangle: {

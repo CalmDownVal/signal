@@ -1,6 +1,6 @@
 {
 	"name": "@cdv/signal",
-	"description": "A lightweight event dispatcher.",
+	"description": "A lightweight event dispatcher with async handler support.",
 	"version": "4.3.1",
 	"license": "ISC",
 	"main": "./build/index.cjs.min.js",
@@ -13,7 +13,7 @@
 			"types": "./build/index.d.ts"
 		}
 	},
-	"homepage": "https://github.com/CalmDownVal/signal/tree/master/packages/signal",
+	"homepage": "https://github.com/CalmDownVal/signal",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/CalmDownVal/signal.git"
@@ -28,14 +28,14 @@
 	],
 	"devDependencies": {
 		"@rollup/plugin-terser": "0.4.4",
-		"@rollup/plugin-typescript": "11.1.5",
-		"rollup": "4.9.3",
-		"rollup-plugin-delete": "2.0.0",
+		"@rollup/plugin-typescript": "11.1.6",
+		"rollup": "4.12.0",
 		"rollup-plugin-dts": "6.1.0",
 		"tslib": "2.6.2",
 		"typescript": "5.3.3"
 	},
 	"scripts": {
-		"build": "rollup --config"
+		"build": "./script/build.sh",
+		"publish": "./script/publish.sh"
 	}
 }

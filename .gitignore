@@ -1,5 +1,6 @@
 # Build artifacts
 packages/*/build
+packages/*/publish
 
 # Yarn
 .yarn/*
