@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# assert correct working directory
+# assert correct workspace
 DIR=$(pwd)
 if [ $(cat "$DIR/package.json" | jq -r '.name') != "@cdv/signal" ]; then
-	echo "invalid working directory"
+	echo "invalid workspace"
 	exit 1
 fi
 
@@ -25,7 +25,7 @@ rm -r "$DIR/publish/"* 2>/dev/null
 # copy files
 cp -r "$DIR/build" "$DIR/publish"
 cp "$DIR/../../readme.md" "$DIR/publish"
-cat "$DIR/package.json" | jq 'del(.devDependencies, .scripts)' | unexpand -t2 > "$DIR/publish/package.json"
+cat "$DIR/package.json" | jq 'del(.devDependencies) | .scripts = {}' | unexpand -t2 > "$DIR/publish/package.json"
 
 # publish
 (cd "$DIR/publish"; npm publish --access public)

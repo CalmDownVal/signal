@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# assert correct working directory
+# assert correct workspace
 DIR=$(pwd)
 if [ $(cat "$DIR/package.json" | jq -r '.name') != "@cdv/signal" ]; then
-	echo "invalid working directory"
+	echo "invalid workspace"
 	exit 1
 fi
 

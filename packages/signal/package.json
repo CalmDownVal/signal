@@ -16,7 +16,7 @@
 	"homepage": "https://github.com/CalmDownVal/signal",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/CalmDownVal/signal.git"
+		"url": "git+https://github.com/CalmDownVal/signal.git"
 	},
 	"keywords": [
 		"signal",
