@@ -7,6 +7,14 @@ if [ $(cat "$DIR/package.json" | jq -r '.name') != "@cdv/signal" ]; then
 	exit 1
 fi
 
+# tag the version
+VER=$(cat "$DIR/package.json" | jq -r '.version')
+git tag "v$VER"
+if [ $? -ne 0 ]; then
+	echo "failed to tag v$VER"
+	exit 1
+fi
+
 # (re-)build first
 "$DIR/script/build.sh"
 
