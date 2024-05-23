@@ -8,18 +8,17 @@ describe('Signal creation', () => {
 			const test = Signal.create({ async: false });
 			assert.strictEqual(test.isAsync, false);
 
-			const result: unknown = test();
-			assert(result === undefined);
+			const returnValue: unknown = test();
+			assert.strictEqual(returnValue, false);
 		});
 
 		it('should create asynchronous signals when `async` is set to TRUE', async () => {
 			const test = Signal.create({ async: true });
 			assert.strictEqual(test.isAsync, true);
 
-			const result: unknown = test();
-			assert(result instanceof Promise);
-
-			await result;
+			const returnValue: unknown = test();
+			assert(returnValue instanceof Promise);
+			assert.strictEqual(await returnValue, false);
 		});
 	});
 });

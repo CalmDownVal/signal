@@ -130,7 +130,7 @@ export function lazy<T>(this: any, signal: Signal<T>, lazyEvent: () => T) {
 	if (signal.$backend.$factory.$size(signal.$backend) > 0) {
 		const call = (signal as any).call(this, lazyEvent());
 		return signal.isAsync
-			? (call as Promise<void>).then(() => true)
+			? call as Promise<boolean>
 			: true;
 	}
 

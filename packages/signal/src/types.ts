@@ -62,7 +62,7 @@ interface SignalBase<T, TAsync extends boolean> {
  * presumed to be synchronous and any returned Promises will be ignored.
  */
 export interface SyncSignal<T = void> extends SignalBase<T, false> {
-	(...args: SignalArgs<T>): void;
+	(...args: SignalArgs<T>): boolean;
 }
 
 /**
@@ -70,7 +70,7 @@ export interface SyncSignal<T = void> extends SignalBase<T, false> {
  * attached handlers is checked and any "thenable" results are properly awaited.
  */
 export interface AsyncSignal<T = void> extends SignalBase<T, true> {
-	(...args: SignalArgs<T>): Promise<void>;
+	(...args: SignalArgs<T>): Promise<boolean>;
 }
 
 /**

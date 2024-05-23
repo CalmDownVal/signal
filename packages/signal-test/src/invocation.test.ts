@@ -27,6 +27,18 @@ describe('Signal invocation', () => {
 		assert(handler.calledOn(context));
 	});
 
+	it('should return true/false indicating handler presence', () => {
+		const testOn = Signal.create();
+		const testOff = Signal.create();
+
+		Signal.on(testOn, () => {});
+		const returnValueOn = testOn();
+		const returnValueOff = testOff();
+
+		assert.strictEqual(returnValueOn, true);
+		assert.strictEqual(returnValueOff, false);
+	});
+
 	it('should forward event objects and `this` from EventEmitter', () => {
 		const event = {};
 		const emitter = new EventEmitter();

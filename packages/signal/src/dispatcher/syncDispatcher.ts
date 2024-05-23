@@ -7,9 +7,10 @@ export function createSyncDispatcher<T = void>(backend: SignalBackend<T>) {
 		const { length } = snapshot;
 
 		let index = 0;
-		while (index < length) {
+		for (; index < length; ++index) {
 			snapshot[index].call(this, event!);
-			++index;
 		}
+
+		return length > 0;
 	};
 }

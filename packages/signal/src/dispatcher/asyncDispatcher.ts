@@ -9,7 +9,7 @@ export function createAsyncDispatcher<T = void>(backend: SignalBackend<T>, optio
 }
 
 function dispatchInParallel<T>(thisArg: any, snapshot: readonly WrappedSignalHandler<T>[], event: T) {
-	return new Promise<void>((resolve, reject) => {
+	return new Promise<boolean>((resolve, reject) => {
 		let pending = 0;
 		let index = 0;
 		let result;
@@ -17,7 +17,7 @@ function dispatchInParallel<T>(thisArg: any, snapshot: readonly WrappedSignalHan
 		const { length } = snapshot;
 		const onHandlerResolved = () => {
 			if (--pending === 0) {
-				resolve();
+				resolve(length > 0);
 			}
 		};
 
@@ -34,13 +34,13 @@ function dispatchInParallel<T>(thisArg: any, snapshot: readonly WrappedSignalHan
 }
 
 function dispatchInSeries<T>(thisArg: any, snapshot: readonly WrappedSignalHandler<T>[], event: T) {
-	return new Promise<void>((resolve, reject) => {
+	return new Promise<boolean>((resolve, reject) => {
 		let index = 0;
 
 		const { length } = snapshot;
 		const next = () => {
 			if (index >= length) {
-				resolve();
+				resolve(length > 0);
 				return;
 			}
 

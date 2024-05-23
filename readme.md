@@ -39,8 +39,8 @@ EventTarget (DOM) APIs. It looks and feels quite different and may involve a
 slight learning curve, but here's why it might be worth it:
 
 - ✅ does not rely on class inheritance or mixins
-- ✅ recognizes and awaits async handlers
-- ✅ avoids event name strings, making TypeScript integration easier
+- ✅ recognizes and awaits Promises (async handlers)
+- ✅ avoids event name strings, making TypeScript integration effortless
 - ✅ smoothly integrates with standard event emitter APIs
 - ✅ comes bundled with TypeScript declarations
 - ✅ tiny (<2 kB) and without any dependencies
@@ -168,15 +168,28 @@ adding a pair of brackets! You can pass any data as the first argument to a
 signal, it will be forwarded to each handler. Typically this will be an event
 object with additional information.
 
-Synchronous signals do not return any value (void), asynchronous return a
-`Promise<void>`.
-
 ```ts
 mySignal(123);
 ```
 
-Synchronous signals will always invoke handlers in series. If any one of them
-throws the execution immediately stops. It is the caller's responsibility to
+Signals return a boolean value (or for async signals, a Promise resolving to
+one) indicating whether any handlers were present and invoked. This is often
+useful for fallback behavior, e.g. logging when no handlers are attached to an
+error signal:
+
+```ts
+try {
+  // ...
+}
+catch (ex) {
+  if (errorSignal(ex)) {
+    console.error(ex);
+  }
+}
+```
+
+Synchronous signals will always invoke handlers in series. The execution stops
+immediately if any one of them throws. It is the caller's responsibility to
 handle thrown exceptions:
 
 ```ts
@@ -190,7 +203,7 @@ catch (ex) {
 
 You can add async handlers to synchronous signals, but they will be executed in
 a fire-and-forget fashion. This may be desirable in some cases, but keep in mind
-that *it will be impossible to handle any potential promise rejections!*
+that *it will become impossible to handle any potential promise rejections!*
 
 ### Checking for Handlers
 
@@ -208,23 +221,8 @@ Signal.lazy(mySignal, () => ({
 }));
 ```
 
-A boolean is returned indicating whether any handler has been invoked. This is
-useful for fallback behavior, e.g. logging when no handlers are attached to an
-error signal.
-
-```ts
-try {
-  // ...
-}
-catch (ex) {
-  if (!Signal.lazy(errorSignal, () => ex)) {
-    console.error(ex);
-  }
-}
-```
-
-The `lazy` function recognizes async signals and will return a promise in such
-cases.
+A boolean value (or for async signals, a Promise resolving to one) indicating
+whether any handlers were present and invoked is returned.
 
 ### Async Signals
 
@@ -360,6 +358,8 @@ reference) to all its handlers.
 
 ## Changelog
 
+- 4.5.0
+  - Signals now return booleans indicating whether any handlers were invoked.
 - 4.4.0
   - Added the `prepend` option to `on`, `once` and `subscribe`.
 - 4.3.0
@@ -368,8 +368,8 @@ reference) to all its handlers.
 - 4.2.0
   - Added the `subscribe` method.
 - 4.1.0
-  - The `lazy` util now returns booleans indicating whether the signal was
-    triggered.
+  - The `lazy` util now returns booleans indicating whether any handlers were
+    invoked.
 - 4.0.0
   - Changed `es6map` backend to `set`.
   - Removed `hasHandlers` getter, use `lazy` instead.
