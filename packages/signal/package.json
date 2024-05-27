@@ -1,16 +1,33 @@
 {
 	"name": "@cdv/signal",
 	"description": "A lightweight event dispatcher with async handler support.",
-	"version": "4.5.0",
+	"version": "5.0.0",
 	"license": "ISC",
-	"main": "./build/index.cjs.min.js",
-	"module": "./build/index.esm.min.mjs",
-	"types": "./build/index.d.ts",
 	"exports": {
 		".": {
-			"require": "./build/index.cjs.min.js",
-			"import": "./build/index.esm.min.mjs",
+			"require": "./build/index.cjs.js",
+			"import": "./build/index.esm.mjs",
 			"types": "./build/index.d.ts"
+		},
+		"./array": {
+			"require": "./build/array.cjs.js",
+			"import": "./build/array.esm.mjs",
+			"types": "./build/array.d.ts"
+		},
+		"./set": {
+			"require": "./build/set.cjs.js",
+			"import": "./build/set.esm.mjs",
+			"types": "./build/set.d.ts"
+		},
+		"./sync": {
+			"require": "./build/sync.cjs.js",
+			"import": "./build/sync.esm.mjs",
+			"types": "./build/sync.d.ts"
+		},
+		"./async": {
+			"require": "./build/async.cjs.js",
+			"import": "./build/async.esm.mjs",
+			"types": "./build/async.d.ts"
 		}
 	},
 	"homepage": "https://github.com/CalmDownVal/signal",

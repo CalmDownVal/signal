@@ -1,55 +1,71 @@
 /**
- * Represents any function attached as a handler of a signal.
+ * Represents any function attached as a handler of a Signal.
  */
-export interface SignalHandler<T = void> {
-	(event: T): any;
+export interface SignalHandler<TEvent = void> {
+	(event: TEvent): any;
 }
 
-export interface SignalHandlerOptions {
-	/**
-	 * Controls whether the handler should automatically be removed after its
-	 * first invocation. Defaults to `false`.
-	 */
-	once?: boolean;
-
-	/**
-	 * Controls whether the handler should be inserted at the start of the
-	 * handler collection rather than at the end. Defaults to `false`.
-	 */
-	prepend?: boolean;
-}
-
-/** @internal */
-export interface WrappedSignalHandler<T> extends SignalHandler<T> {
+/**
+ * Represents any function attached as a handler of a Signal, or potentially a wrapper around
+ * a SignalHandler containing logic to remove the handler after first invocation. Used for the
+ * 'once' mechanic.
+ */
+export interface WrappedSignalHandler<TEvent = void> extends SignalHandler<TEvent> {
 	/**
 	 * When set, holds a ref to the original function wrapped as oneshot.
 	 */
-	$once?: SignalHandler<T>;
+	$once?: SignalHandler<TEvent>;
 }
 
-/** @internal */
-export interface SignalBackend<T> {
-	readonly $factory: SignalBackendFactory<this, T>;
+export interface SignalBackendFactory<TBackend, TEvent = any> {
+	/**
+	 * Creates a new backend instance.
+	 */
+	$new(): TBackend;
+
+	/**
+	 * Adds a SignalHandler to the backend.
+	 */
+	$add(backend: TBackend, handler: WrappedSignalHandler<TEvent>, prepend?: boolean): void;
+
+	/**
+	 * Resets the backend, releasing all registered SignalHandlers.
+	 */
+	$reset(backend: TBackend): boolean;
+
+	/**
+	 * Gets the number of registered SignalHandlers.
+	 */
+	$count(backend: TBackend): number;
+
+	/**
+	 * Deletes a SignalHandler from the backend.
+	 */
+	$delete(backend: TBackend, handler: SignalHandler<TEvent>): boolean;
+
+	/**
+	 * Deletes a wrapped SignalHandler from the backend.
+	 */
+	$wrappedDelete(backend: TBackend, handler: WrappedSignalHandler<TEvent>): void;
+
+	/**
+	 * Gets snapshot of this backend.
+	 */
+	$snapshot(backend: TBackend): readonly WrappedSignalHandler<TEvent>[];
 }
 
-/** @internal */
-export interface SignalBackendFactory<TBackend extends SignalBackend<any> = SignalBackend<any>, TSignal = any> {
-	$create(): TBackend;
-	$add(backend: TBackend, handler: WrappedSignalHandler<TSignal>, prepend?: boolean): void;
-	$clear(backend: TBackend): boolean;
-	$size(backend: TBackend): number;
-	$delete(backend: TBackend, handler: SignalHandler<TSignal>): boolean;
-	$deleteWrapped(backend: TBackend, handler: WrappedSignalHandler<TSignal>): void;
-	$getSnapshot(backend: TBackend): readonly WrappedSignalHandler<TSignal>[];
-}
+export type SignalArgs<TEvent> = TEvent extends void ? [] : [ event: TEvent ];
 
-export type SignalBackendType = 'array' | 'set';
+interface SignalBase<TBackend, TEvent, TAsync extends boolean> {
+	/**
+	 * The SignalBackend used by this signal.
+	 */
+	readonly $backend: TBackend;
 
-export type SignalArgs<T> = T extends void ? [] : [ event: T ];
-
-interface SignalBase<T, TAsync extends boolean> {
-	/** @internal */
-	readonly $backend: SignalBackend<T>;
+	/**
+	 * The SignalBackendFactory for this Signal's SignalBackend.
+	 */
+	readonly $factory: SignalBackendFactory<TBackend, TEvent>;
 
 	/**
 	 * Gets a boolean indicating whether this Signal is asynchronous.
@@ -58,57 +74,78 @@ interface SignalBase<T, TAsync extends boolean> {
 }
 
 /**
- * Represents a synchronous Signal. When triggered, all attached handlers are
- * presumed to be synchronous and any returned Promises will be ignored.
+ * Represents a synchronous Signal. When triggered, all attached handlers are presumed to be
+ * synchronous and any returned Promises will be ignored.
  */
-export interface SyncSignal<T = void> extends SignalBase<T, false> {
-	(...args: SignalArgs<T>): boolean;
+export interface SyncSignal<TEvent = void> extends SignalBase<any, TEvent, false> {
+	(...args: SignalArgs<TEvent>): boolean;
 }
 
 /**
- * Represents an asynchronous Signal. When triggered, the return value of all
- * attached handlers is checked and any "thenable" results are properly awaited.
+ * Represents an asynchronous Signal. When triggered, the return value of all attached handlers is
+ * checked and any "thenable" results are properly awaited.
  */
-export interface AsyncSignal<T = void> extends SignalBase<T, true> {
-	(...args: SignalArgs<T>): Promise<boolean>;
+export interface AsyncSignal<TEvent = void> extends SignalBase<any, TEvent, true> {
+	(...args: SignalArgs<TEvent>): Promise<boolean>;
 }
 
 /**
  * Represents any Signal (synchronous or asynchronous).
  */
-export type Signal<T = void> =
-	| SyncSignal<T>
-	| AsyncSignal<T>;
+export type Signal<TEvent = void> = SyncSignal<TEvent> | AsyncSignal<TEvent>;
 
-interface SignalOptionsBase<TAsync extends boolean> {
+/**
+ * Represents factory function responsible for creating Signal instances with specific, optionally
+ * configurable, dispatch logic.
+ */
+export interface SignalDispatcherFactory<TBackend, TEvent, TOptions extends {}> {
+	(backendFactory: SignalBackendFactory<TBackend>, dispatcherOptions?: TOptions): Signal<TEvent>;
+}
+
+
+
+
+interface SignalOptionsBase<TBackend, TAsync extends boolean> {
 	/**
-	 * Controls whether or not to create an asynchronous Signal.
+	 * Sets the SignalDispatcherFactory used to create the Signal's dispatcher. This ultimately
+	 * controls the behavior of calling individual handlers and error propagation.
 	 *
-	 * Defaults to `false`, i.e. synchronous signals.
+	 * Defaults to `SyncDispatcherFactory`.
 	 */
-	async?: TAsync;
+	dispatcher?: SignalDispatcherFactory<TBackend>;
 
 	/**
-	 * Allows to change the backing data structure used to store handlers
-	 * attached to the created Signal.
+	 * Sets the SignalBackendFactory used to create the backend for the new Signal. This ultimately
+	 * controls the behavior of adding and removing signal handlers.
 	 *
-	 * Defaults to `'array'`.
+	 * Defaults to `DefaultSignalBackend`.
 	 */
-	backend?: SignalBackendType;
+	backend?: SignalBackendFactory<TBackend>;
 }
 
 export interface SyncSignalOptions extends SignalOptionsBase<false> {}
 
 export interface AsyncSignalOptions extends SignalOptionsBase<true> {
 	/**
-	 * Controls whether or not to run asynchronous handlers in parallel rather
-	 * than in series.
+	 * Controls whether or not to run asynchronous handlers in parallel rather than in series.
 	 *
 	 * Defaults to `false`.
 	 */
 	parallel?: boolean;
 }
 
-export type SignalOptions =
-	| SyncSignalOptions
-	| AsyncSignalOptions;
+export type SignalOptions = SyncSignalOptions | AsyncSignalOptions;
+
+export interface SignalHandlerOptions {
+	/**
+	 * Controls whether the handler should automatically be removed after its first invocation.
+	 * Defaults to `false`.
+	 */
+	once?: boolean;
+
+	/**
+	 * Controls whether the handler should be inserted at the start of the handler collection rather
+	 * than at the end. Defaults to `false`.
+	 */
+	prepend?: boolean;
+}

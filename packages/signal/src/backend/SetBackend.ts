@@ -1,16 +1,16 @@
 import type { SignalBackend, SignalBackendFactory, SignalHandler, WrappedSignalHandler } from '~/types';
 
 /** @internal */
-export interface SetBackend<T> extends SignalBackend<T> {
+export interface SetSignalBackend<T> extends SignalBackend<T> {
 	$handlers: Map<SignalHandler<T>, WrappedSignalHandler<T>>;
 	$snapshot: WrappedSignalHandler<T>[] | null;
 }
 
 /** @internal */
-export const SetBackendFactory: SignalBackendFactory<SetBackend<any>> = {
+export const SetBackend: SignalBackendFactory<SetBackend<any>> = {
 	$create() {
 		return {
-			$factory: SetBackendFactory,
+			$factory: SetBackend,
 			$handlers: new Map<SignalHandler<any>, WrappedSignalHandler<any>>(),
 			$snapshot: null
 		};

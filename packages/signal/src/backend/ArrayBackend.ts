@@ -1,16 +1,16 @@
-import type { SignalBackend, SignalBackendFactory, WrappedSignalHandler } from '~/types';
+import type { SignalBackend, SignalBackendFactory, WrappedSignalHandler } from '@cdv/signal';
 
 /** @internal */
-export interface ArrayBackend<T> extends SignalBackend<T> {
+export interface DefaultSignalBackend<T> extends SignalBackend<T> {
 	$handlers: WrappedSignalHandler<T>[];
 	$snapshot: WrappedSignalHandler<T>[] | null;
 }
 
 /** @internal */
-export const ArrayBackendFactory: SignalBackendFactory<ArrayBackend<any>> = {
+export const DefaultBackend: SignalBackendFactory<DefaultSignalBackend<any>> = {
 	$create() {
 		return {
-			$factory: ArrayBackendFactory,
+			$factory: DefaultBackend,
 			$handlers: [],
 			$snapshot: null
 		};

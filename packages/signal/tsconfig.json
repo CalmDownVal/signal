@@ -11,6 +11,9 @@
 		"noEmit": true,
 		"outDir": "./build",
 		"paths": {
+			"@cdv/signal": [
+				"./index.ts"
+			],
 			"~/*": [
 				"*"
 			]
